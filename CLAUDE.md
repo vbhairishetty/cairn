@@ -55,10 +55,11 @@ dedicated path for F-1 students on OPT and STEM OPT. The full design lives in
 ## Tech stack
 
 Java 21, Spring Boot 3, Maven (wrapper `./mvnw`), Spring Modulith, PostgreSQL 16 with Flyway
-and pgvector, Redis, Apache PDFBox 3, Tabula-java, Thymeleaf with Chart.js, picocli,
-JUnit 5, AssertJ, Mockito, jqwik, Testcontainers, JaCoCo, Spotless (Google Java Style),
-Error Prone, Docker Compose on Colima, GitHub Actions, CodeQL, Dependabot, Trivy, Mailpit,
-Ollama (optional, local only).
+and pgvector, Apache PDFBox 3, Tabula-java, Thymeleaf with Chart.js, Spring Security,
+iCal4j, springdoc-openapi, picocli, JUnit 5, AssertJ, Mockito, jqwik, Testcontainers, JaCoCo,
+Spotless (Google Java Style), Error Prone, Docker Compose on Colima, GitHub Actions, CodeQL,
+Dependabot, Trivy, Mailpit (email stretch goal only), Ollama (optional, local only).
+Redis is not used in v1 (ADR 0001).
 
 ## Commands
 
@@ -68,7 +69,7 @@ Ollama (optional, local only).
 | All gates (compile with Error Prone, unit and integration tests, Modulith verify, coverage) | `./mvnw verify` |
 | Format check only | `./mvnw spotless:check` |
 | One test class | `./mvnw test -Dtest=ClassName` |
-| Start dependencies | `docker compose up -d postgres redis mailpit` |
+| Start dependencies | `docker compose up -d postgres` |
 | Run the app | `./mvnw spring-boot:run` |
 | Stop and keep data | `docker compose down` |
 
@@ -95,7 +96,7 @@ TASKS.md                                     backlog and status
 ## Modules
 
 `documents`, `jobs`, `extract`, `normalize`, `validate`, `engine`, `diff`, `rules`,
-`timeline`, `reminders`, `ask`, `web`, `cli`, and `common` (shared value types such as
+`profile`, `timeline`, `reminders`, `ask`, `web`, `cli`, and `common` (shared value types such as
 `Money` and `SourceRef`; open to all modules). Allowed dependencies are listed in
 `.claude/rules/architecture.md`.
 

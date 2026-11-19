@@ -23,8 +23,14 @@ Cairn keeps as little of it as possible.
 - Uploaded PDFs are stored under generated names in the configured data directory.
 - `raw_cell` keeps text extracted from documents because provenance needs it. It is
   personal data and follows every rule in this file.
-- The "delete everything" action and `cairn delete-all` remove documents, extracted data,
-  estimates, reminders and profile data, and the test for it checks every table.
+- The "delete everything" action and `cairn delete-all` pause the job worker, then remove
+  every user-data row (documents, jobs, extracted and normalized data, review items,
+  estimates, reconciliations, reminders, timeline events, profile and embeddings) and every
+  stored file, and reset price assumptions to their seed values. Reference data in `rules` is
+  kept. The test for it checks every user-data table and the data directory.
+- No email address is stored. If the email reminder stretch ships, the address comes from
+  configuration.
+- The free-benefits checklist does not use sex; items that depend on it are labeled.
 
 ## Test data
 
@@ -37,7 +43,8 @@ Cairn keeps as little of it as possible.
 ## Rules data
 
 - Legal and policy rules in `src/main/resources/rules/` are public facts with a
-  `source_url`, `effective_from`, optional `effective_to`, and `verified_on`.
+  `source_url`, `effective_from`, optional `effective_to`, and `verified_on`. A legal rule's
+  `source_url` is a primary source (CMS, IRS, USCIS, DHS or the Federal Register), not a blog.
 - A rule is never edited in place when the law changes; a new entry is added with new dates.
 - Rules not re-verified within 90 days are flagged in the UI as needing review.
 
