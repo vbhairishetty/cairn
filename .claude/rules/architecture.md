@@ -12,7 +12,8 @@ to change, test and, if ever needed, split.
 - Everything else lives under `<module>.internal` and must not be referenced from another
   module. Spring Modulith treats subpackages as internal, and the verify test fails the build
   if another module reaches into them.
-- `common` holds shared value types only (`Money`, `SourceRef`, `Network`, `CoverageTier`).
+- `common` holds shared value types only (`Money`, `SourceRef`, `Service`, `Network`,
+  `LimitTier`, `CoverageTier`).
   It has no Spring beans, no database access and no dependencies on other modules.
 
 ## Allowed dependencies
@@ -25,14 +26,15 @@ Cycles are forbidden.
 | `common` | nothing |
 | `documents` | `common` |
 | `jobs` | `common` |
-| `extract` | `common`, `documents` |
+| `extract` | `common`, `documents`, `jobs` (implements `JobHandler`, ADR 0003) |
 | `normalize` | `common`, `extract` |
 | `validate` | `common`, `normalize` |
-| `engine` | `common`, `validate` (reads validated plans only) |
+| `engine` | `common`, `validate` (reads validated plans only), `rules` (reference data, ADR 0004) |
 | `diff` | `common`, `validate` |
 | `rules` | `common` |
+| `profile` | `common` (ADR 0002) |
 | `timeline` | `common`, `rules` |
-| `reminders` | `common`, `validate`, `rules` |
+| `reminders` | `common`, `validate`, `rules`, `profile` (ADR 0002) |
 | `ask` | `common`, `engine`, `validate`, `rules` |
 | `web` | any module's public API, never internals |
 | `cli` | any module's public API, never internals |
@@ -45,8 +47,11 @@ adding it.
 - Use a direct call to another module's public API when the caller needs an answer now
   (for example `engine` asking `validate` for a validated plan).
 - Use an application event when a module reacts to something that already happened (for
-  example `DocumentUploaded` triggering an extraction job). Events are records in the
-  publishing module's root package, named in past tense.
+  example `normalize` reacting to `CellsExtracted`). Events are records in the publishing
+  module's root package, named in past tense, and carry IDs only.
+- The extraction pipeline (`CellsExtracted`, `PlanNormalized`, `PlanValidated`) uses
+  synchronous listeners in the job's transaction, so a failure rolls back and the job retries
+  (ADR 0003). No event publication registry is used.
 - Event listeners must be idempotent: handling the same event twice has the same result as
   handling it once.
 

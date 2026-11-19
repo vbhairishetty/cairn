@@ -5,7 +5,7 @@ lists the threats specific to Cairn, the defense for each, and the test that pro
 defense. Every threat must have a passing test before release. The security reviewer adds new
 entries when a change introduces a new risk.
 
-Last reviewed: <date> by <director>
+Last reviewed: 2026-11-19 in the design review, approved by the director
 
 ## Assets
 
@@ -29,17 +29,21 @@ Last reviewed: <date> by <director>
 | Id | Threat | Defense | Test | Status |
 | --- | --- | --- | --- | --- |
 | TM-01 | Malicious or huge upload exhausts memory or CPU (oversized file, page bomb, fake PDF) | 10 MB and 50-page limits, PDF magic bytes and content-type check, parser timeout, generated storage names | `UploadLimitsSecurityTest`: oversized, too many pages, fake PDF, slow parse all rejected | planned |
-| TM-02 | Prompt injection inside a PDF steers Ask Cairn ("ignore your instructions") | Document text placed in a delimited data block, system prompt says it is data, citations required, number post-check | `AskInjectionSecurityTest` with an injected fixture; eval case in `ask-cases.yaml` | planned |
-| TM-03 | Rule Watcher fetches an unsafe URL (SSRF in CI, malicious redirect) | HTTPS allowlist, no cross-host redirects, timeout and size limit | `RuleWatcherAllowlistTest`: non-allowlisted URL and cross-host redirect refused | planned |
+| TM-02 | (Ask Cairn only; "not shipped" if cut) Prompt injection inside a PDF steers Ask Cairn ("ignore your instructions") | Document text placed in a delimited data block, system prompt says it is data, citations required, number post-check | `AskInjectionSecurityTest` with an injected fixture; eval case in `ask-cases.yaml` | planned |
+| TM-03 | (Rule Watcher only; "not shipped" if cut) Rule Watcher fetches an unsafe URL (SSRF in CI, malicious redirect) | HTTPS allowlist, no cross-host redirects, timeout and size limit | `RuleWatcherAllowlistTest`: non-allowlisted URL and cross-host redirect refused | planned |
 | TM-04 | Cross-site scripting through plan names or extracted text | Thymeleaf `th:text` only, Content-Security-Policy without inline scripts | `XssSecurityTest`: a plan name with a script tag renders as text | planned |
 | TM-05 | SQL injection through search or sort parameters | Parameterized queries, explicit sort-key mapping | `SqlInjectionSecurityTest`: malicious inputs return no extra rows and no error details | planned |
 | TM-06 | Cross-site request forgery changes data from another site | Spring Security CSRF tokens on state-changing requests | `CsrfSecurityTest`: post without a token returns 403 | planned |
-| TM-07 | Cairn exposed on the local network | Bind to `127.0.0.1` by default; warning when changed | `BindAddressTest`: default bind address is loopback | planned |
+| TM-07 | Cairn exposed on the local network | Bind to `127.0.0.1` by default; warning when changed; Docker Compose publishes every port on `127.0.0.1` only | `BindAddressTest`: default bind address is loopback; `ComposePortsTest`: every published port in `docker-compose.yml` starts with `127.0.0.1:` | planned |
+| TM-11 | DNS rebinding: a malicious website in the user's browser reaches the local API | Requests whose `Host` header is not `localhost` or `127.0.0.1` are rejected; CSRF on every state-changing request | `HostHeaderSecurityTest`: `Host: evil.example` is rejected; `localhost:8080`, `127.0.0.1` and `[::1]` are accepted | planned |
+| TM-12 | Management endpoints leak configuration or internals | Only the `health` and `prometheus` actuator endpoints are exposed | `ActuatorExposureSecurityTest`: `/actuator/env` and `/actuator/heapdump` return 404 | planned |
+| TM-13 | Personal data left behind after "delete everything" | Delete-all pauses the worker and wipes every module schema and the file store | `DeleteAllSecurityTest`: every user-data table and the data directory are empty afterwards | planned |
 | TM-08 | Personal data leaks into logs or error responses | No document text or profile values in logs; problem details without internals | `LogPrivacyTest`: known fixture values absent from captured logs; `ErrorResponseTest` | planned |
 | TM-09 | Wrong or stale legal rule misleads a user | Versioned rules with sources and `verified_on`; 90-day review flag; human approval of changes | `RuleDataValidationTest`: missing source or overlapping dates fail startup; stale flag shown | planned |
 | TM-10 | Vulnerable dependency or image | Dependabot, dependency review, CodeQL, Trivy; pinned versions | CI jobs; release blocked on High or Critical | planned |
 
-Status values: `planned`, `defended` (defense merged), `tested` (test merged and passing).
+Status values: `planned`, `defended` (defense merged), `tested` (test merged and passing),
+`not shipped` (the feature was cut; the threat does not apply to the release).
 
 ## Out of scope for v1
 

@@ -22,9 +22,15 @@
 ## Pull requests
 
 - One task per pull request. Title follows the commit convention.
-- The description is produced by `/pr-summary` and contains: what changed and why, how it was
-  verified (commands and results), review and security findings with their resolution,
-  risks, and how to try it.
+- The description is produced by `/pr-summary`. It is written as a senior engineer would for
+  a teammate: short and plain, in the author's voice, never addressing the reader as "you".
+- It contains only what helps decide whether to merge, in these sections and only when they
+  have content: What (one or two sentences), Key changes (3 to 6 bullets, no sub-bullets),
+  Testing (what was run and the result; Review instead for docs-only changes), Risks (only
+  risks this change introduces, one line each), and How to try it (user-facing changes only).
+- 80 to 200 words. Detail that lives in the repo is linked (design doc, ADR,
+  `docs/ai-workflow.md`), not repeated. Honest caveats and accepted risks stay, one line each.
+- No AI credit lines, no emoji, no headings beyond those sections.
 - Agents may open a pull request (`gh pr create`) only after the full task loop passes.
 - Agents never merge, approve, or close pull requests. The director does.
 
