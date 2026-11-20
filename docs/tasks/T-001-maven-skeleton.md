@@ -137,9 +137,10 @@ public class CairnApplication {
 | `BuildConfigurationTest#errorProneTreatsReferenceAndBigDecimalEqualityAsErrors` | unit (reads `pom.xml`) | 5: guards the two `-Xep:...:ERROR` flags so they cannot be removed silently |
 | Temporary `ReferenceEquality`, `BigDecimalEquals` and `ReturnValueIgnored` probes (not committed) | build | 5 |
 | Temporary `*IT` probe showing `target/jacoco-it.exec` (not committed) | build | 6 |
-| `./mvnw verify` output | build | 2, 6, 7 |
+| `./mvnw clean verify` output | build | 2, 7, 8 |
 | Temporary bad-format and Error Prone files (not committed) | build | 4, 5 |
-| `git status` after build | manual check | 8 |
+| `git status` after build | manual check | 9 |
+| Wrapper tamper probe: one changed digit in `distributionSha256Sum` is rejected (not committed) | manual check | 10 |
 
 Test-first evidence: `CairnApplicationTest` is written first and fails to compile (no
 `CairnApplication`), then passes.
@@ -153,7 +154,9 @@ Test-first evidence: `CairnApplicationTest` is written first and fails to compil
 
 ## Gates
 
-All gates in `/verify-gates` must pass. Gate 4 runs `./mvnw clean verify` (director decision, round 2: JaCoCo appends to its data files, so a plain `verify` can count stale coverage). Coverage thresholds are configured as in criterion 6.
+All gates in `/verify-gates` must pass. Gate 4 runs `./mvnw clean verify` (director
+decision, round 2: JaCoCo appends to its data files, so a plain `verify` can count stale
+coverage). Coverage thresholds are configured as in criterion 7.
 With only `CairnApplication` present, the class may be excluded with the exact pattern
 `app/cairn/CairnApplication.class` (not a wildcard) and an accurate comment (round 2, finding
 R3).
