@@ -9,7 +9,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | Id | Title | Agent | Status | Depends on |
 | --- | --- | --- | --- | --- |
 | - | Design draft and review of `docs/designs/cairn.md` (`/design-review`) | orchestrator + design-reviewer | IN_REVIEW | - |
-| T-001 | Maven project skeleton with Spring Boot, Spring Modulith, Spotless, Error Prone, JaCoCo | junior-implementer | READY | design PR merged |
+| T-001 | Maven project skeleton with Spring Boot, Spring Modulith, Spotless, Error Prone, JaCoCo | junior-implementer | IN_PROGRESS | design PR merged |
 | T-002 | Modularity test and module root packages for all modules | sde1-implementer | DRAFT | T-001 |
 | T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | READY (waits on DB password decision) | T-001 |
 | T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config | junior-implementer | DRAFT | T-001 |
