@@ -1,7 +1,7 @@
 ---
 id: T-001
 title: Create the Maven project skeleton with build gates
-status: IN_PROGRESS
+status: IN_REVIEW
 complexity: low
 risk: low
 agent: junior-implementer
