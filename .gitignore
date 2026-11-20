@@ -5,6 +5,8 @@ target/
 # Secrets: never commit local environment files
 .env
 .env.*
+*.env
+.envrc
 !.env.example
 
 # IDE and OS files
