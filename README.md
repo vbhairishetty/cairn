@@ -16,7 +16,9 @@ v0.1.0 is planned to include:
 
 - **Compare plans.** Upload the Summary of Benefits and Coverage (SBC) PDFs for your plans.
   Cairn will show the expected, best and worst yearly cost of each plan for your usage. Every
-  number will link to the line in the PDF it came from. Costs are estimates, not bills.
+  number will link to its source: a line in the PDF, a value you entered, or a labeled price
+  assumption. Totals will also show the breakdown they were built from. Costs are estimates,
+  not bills.
 - **Free-benefits checklist.** A personal list of preventive care that costs nothing under
   your plan, with calendar reminders you import as an `.ics` file.
 - **What changed since last year?** A rule-by-rule comparison of two versions of the same plan.
@@ -25,14 +27,15 @@ v0.1.0 is planned to include:
 
 ## Privacy
 
-- Cairn will run only on your machine, and nothing about you will leave it. The app makes no
-  outbound calls. During setup, Docker downloads the image and, if you choose, a local AI
-  model. Neither carries your data.
-- Cairn will store as little as it can. It uses an age band instead of a birth date, and it
-  does not store names, member IDs, email addresses or medical history.
+- Cairn will run only on your machine, and nothing about you will leave it. During setup you
+  will download the Docker image and, if you choose, a local Ollama model. The only connection
+  the app will make is to that model on localhost. None of these will carry your data.
+- Cairn will store as little as it can. It will use an age band instead of a birth date, and
+  it will not store names, member IDs, email addresses or medical history. It will store a
+  coverage tier and, only if you choose the OPT path, a visa category.
 - Delete everything: a button in the app and the `cairn delete-all` command will remove your
   documents, extracted data, estimates, reminders and profile.
-- Cairn will not encrypt stored data itself. It relies on your computer's disk encryption,
+- Cairn will not encrypt stored data itself. It will rely on your computer's disk encryption,
   such as FileVault on a Mac.
 
 ## Not advice
@@ -64,7 +67,8 @@ each change. A person reviews and merges every change. To learn more, read:
 
 ## Tech stack
 
-Java 21, Spring Boot 4.1, Spring Modulith, PostgreSQL 16 with Flyway and pgvector, Apache PDFBox 3 with Tabula-java, Thymeleaf with Chart.js, and Maven.
+Java 21, Spring Boot 4.1, Spring Modulith, PostgreSQL 16 with Flyway and pgvector, Apache
+PDFBox 3 with Tabula-java, Thymeleaf with Chart.js, and Maven.
 
 ## License
 
