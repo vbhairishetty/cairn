@@ -11,13 +11,20 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 class BuildConfigurationTest {
 
+  // Test hook: point at a copy of the pom to check that these tests catch a weakened ban.
+  private static final Path POM = Path.of(System.getProperty("cairn.pomPath", "pom.xml"));
+
+  private static final String ENFORCER =
+      "/project/build/plugins/plugin[artifactId='maven-enforcer-plugin']";
+  private static final String EXECUTION = ENFORCER + "/executions/execution";
+  private static final String RULE = EXECUTION + "/configuration/rules/bannedDependencies";
+
   @Test
   void errorProneTreatsReferenceAndBigDecimalEqualityAsErrors() throws IOException {
-    String pom = Files.readString(Path.of("pom.xml"));
+    String pom = Files.readString(POM);
 
     assertThat(pom)
         .contains("-Xep:ReferenceEquality:ERROR")
@@ -25,27 +32,39 @@ class BuildConfigurationTest {
   }
 
   @Test
+  void enforcerRunsEnforceGoalInValidatePhase() throws Exception {
+    assertThat(pomHas("boolean(" + EXECUTION + "[phase='validate' and goals/goal='enforce'])"))
+        .isTrue();
+  }
+
+  @Test
   void buildBansJqwik() throws Exception {
+    assertThat(pomHas("boolean(" + RULE + "/excludes/exclude[normalize-space()='net.jqwik:*'])"))
+        .isTrue();
+  }
+
+  @Test
+  void jqwikBanSearchesTransitiveDependencies() throws Exception {
+    assertThat(pomHas("not(" + RULE + "/searchTransitive[normalize-space()!='true'])")).isTrue();
+  }
+
+  @Test
+  void enforcerIsNotSkipped() throws Exception {
+    assertThat(pomHas("not(" + ENFORCER + "//skip[normalize-space()='true'])")).isTrue();
+    assertThat(pomHas("not(/project/properties/enforcer.skip)")).isTrue();
+  }
+
+  @Test
+  void enforcerFailsTheBuildOnViolation() throws Exception {
+    assertThat(pomHas("not(" + ENFORCER + "//fail[normalize-space()='false'])")).isTrue();
+  }
+
+  private static boolean pomHas(String xpath) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-    Document pom = factory.newDocumentBuilder().parse(Path.of("pom.xml").toFile());
-
-    NodeList excludes =
-        (NodeList)
-            XPathFactory.newInstance()
-                .newXPath()
-                .evaluate(
-                    "//*[local-name()='plugin'][*[local-name()='artifactId']"
-                        + "='maven-enforcer-plugin']//*[local-name()='bannedDependencies']"
-                        + "//*[local-name()='excludes']/*[local-name()='exclude']",
-                    pom,
-                    XPathConstants.NODESET);
-    java.util.List<String> values = new java.util.ArrayList<>();
-    for (int i = 0; i < excludes.getLength(); i++) {
-      values.add(excludes.item(i).getTextContent().trim());
-    }
-
-    assertThat(values).contains("net.jqwik:*");
+    Document pom = factory.newDocumentBuilder().parse(POM.toFile());
+    return (Boolean)
+        XPathFactory.newInstance().newXPath().evaluate(xpath, pom, XPathConstants.BOOLEAN);
   }
 }
