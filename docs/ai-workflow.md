@@ -102,4 +102,4 @@ rewritten except to correct a factual error.
   git.
 - Interview note: "The reviewer proved with one probe class that integration coverage was
   never being recorded. The build looked green, but it would have undercounted every
-  repository test I wrote later."
+  repository test added later."

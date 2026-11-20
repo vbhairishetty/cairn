@@ -69,6 +69,8 @@ Director decisions (Nov 20, 2026):
 ## Out of scope
 
 - Demo GIF, screenshots and usage walkthrough (Day 7 README task, once the app runs).
+- The known-limitations table from design section 13 ("shown in the README"). The Day 7 README
+  card must include it (review finding R6).
 - Contributing guide, code of conduct and security policy (`SECURITY.md`), which are follow-up
   cards if the director wants them.
 - A NOTICE file (Apache-2.0 does not require one unless third-party notices need it).
