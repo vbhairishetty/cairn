@@ -65,7 +65,7 @@ pass, and would have failed without the change.
 ## Coverage
 
 - JaCoCo gate: 80% line coverage for `engine`, `normalize`, `validate`, `timeline`, `diff`;
-  70% overall. The gate is in `./mvnw verify`.
+  70% overall. The gate is `./mvnw clean verify` (clean, so stale coverage data cannot count).
 - Coverage is a floor, not the goal. A reviewer may reject code with high coverage but weak
   assertions.
 

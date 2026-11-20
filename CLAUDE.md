@@ -66,7 +66,7 @@ Redis is not used in v1 (ADR 0001).
 | Purpose | Command |
 | --- | --- |
 | Format code | `./mvnw spotless:apply` |
-| All gates (compile with Error Prone, unit and integration tests, Modulith verify, coverage) | `./mvnw verify` |
+| All gates (compile with Error Prone, unit and integration tests, Modulith verify, coverage) | `./mvnw clean verify` |
 | Format check only | `./mvnw spotless:check` |
 | One test class | `./mvnw test -Dtest=ClassName` |
 | Start dependencies | `docker compose up -d postgres` |

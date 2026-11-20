@@ -69,8 +69,10 @@ Colima. No database is needed for this card.
    `.env.*` (except `.env.example`), IDE folders, the local `data/` directory and
    `.claude/agent-memory/` (agent notes, not committed for now) are not listed.
 10. Given `.mvn/wrapper/maven-wrapper.properties`, When the wrapper downloads Maven, Then it
-   verifies `distributionSha256Sum` (the SHA-256 published on Maven Central for the pinned
-   Maven zip) (round 2, finding R4).
+   verifies `distributionSha256Sum` (round 2, finding R4). Maven Central publishes no `.sha256`
+   for the Maven zip (404; `.sha512` and `.sha1` exist), so by director decision the value is
+   the SHA-256 of a zip first verified against the published `.sha512`. The report shows the
+   `.sha512` match and the computed SHA-256.
 
 ## Out of scope
 
@@ -151,7 +153,7 @@ Test-first evidence: `CairnApplicationTest` is written first and fails to compil
 
 ## Gates
 
-All gates in `/verify-gates` must pass. Coverage thresholds are configured as in criterion 6.
+All gates in `/verify-gates` must pass. Gate 4 runs `./mvnw clean verify` (director decision, round 2: JaCoCo appends to its data files, so a plain `verify` can count stale coverage). Coverage thresholds are configured as in criterion 6.
 With only `CairnApplication` present, the class may be excluded with the exact pattern
 `app/cairn/CairnApplication.class` (not a wildcard) and an accurate comment (round 2, finding
 R3).
