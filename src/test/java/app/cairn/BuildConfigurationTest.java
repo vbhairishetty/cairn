@@ -17,10 +17,15 @@ class BuildConfigurationTest {
   // Test hook: point at a copy of the pom to check that these tests catch a weakened ban.
   private static final Path POM = Path.of(System.getProperty("cairn.pomPath", "pom.xml"));
 
+  private static final Path MAVEN_CONFIG =
+      Path.of(System.getProperty("cairn.mavenConfigPath", ".mvn/maven.config"));
+
   private static final String ENFORCER =
       "/project/build/plugins/plugin[artifactId='maven-enforcer-plugin']";
-  private static final String EXECUTION = ENFORCER + "/executions/execution";
+  private static final String EXECUTION =
+      ENFORCER + "/executions/execution[phase='validate' and goals/goal='enforce']";
   private static final String RULE = EXECUTION + "/configuration/rules/bannedDependencies";
+  private static final String PROFILES = "/project/profiles/profile";
 
   @Test
   void errorProneTreatsReferenceAndBigDecimalEqualityAsErrors() throws IOException {
@@ -33,8 +38,7 @@ class BuildConfigurationTest {
 
   @Test
   void enforcerRunsEnforceGoalInValidatePhase() throws Exception {
-    assertThat(pomHas("boolean(" + EXECUTION + "[phase='validate' and goals/goal='enforce'])"))
-        .isTrue();
+    assertThat(pomHas("boolean(" + EXECUTION + ")")).isTrue();
   }
 
   @Test
@@ -49,14 +53,46 @@ class BuildConfigurationTest {
   }
 
   @Test
-  void enforcerIsNotSkipped() throws Exception {
-    assertThat(pomHas("not(" + ENFORCER + "//skip[normalize-space()='true'])")).isTrue();
+  void jqwikBanFailsTheBuildAtErrorLevel() throws Exception {
+    assertThat(pomHas("not(" + RULE + "/level[normalize-space()!='ERROR'])")).isTrue();
+  }
+
+  @Test
+  void jqwikBanHasNoIncludesThatAllowIt() throws Exception {
+    assertThat(pomHas("not(" + RULE + "/includes)")).isTrue();
+  }
+
+  @Test
+  void enforcerHasNoSkipSetting() throws Exception {
+    assertThat(pomHas("not(" + ENFORCER + "//skip)")).isTrue();
+  }
+
+  @Test
+  void enforcerSkipPropertyIsNotSet() throws Exception {
     assertThat(pomHas("not(/project/properties/enforcer.skip)")).isTrue();
   }
 
   @Test
-  void enforcerFailsTheBuildOnViolation() throws Exception {
-    assertThat(pomHas("not(" + ENFORCER + "//fail[normalize-space()='false'])")).isTrue();
+  void enforcerFailSettingIsAbsentOrTrue() throws Exception {
+    assertThat(pomHas("not(" + ENFORCER + "//fail[normalize-space()!='true'])")).isTrue();
+  }
+
+  @Test
+  void noProfileConfiguresTheEnforcer() throws Exception {
+    assertThat(pomHas("not(" + PROFILES + "//plugin[artifactId='maven-enforcer-plugin'])"))
+        .isTrue();
+  }
+
+  @Test
+  void noProfileSetsTheEnforcerSkipProperty() throws Exception {
+    assertThat(pomHas("not(" + PROFILES + "/properties/enforcer.skip)")).isTrue();
+  }
+
+  @Test
+  void mavenConfigDoesNotSkipTheEnforcer() throws IOException {
+    String config = Files.exists(MAVEN_CONFIG) ? Files.readString(MAVEN_CONFIG) : "";
+
+    assertThat(config).doesNotContain("enforcer.skip");
   }
 
   private static boolean pomHas(String xpath) throws Exception {
