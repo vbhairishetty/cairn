@@ -20,6 +20,9 @@ class BuildConfigurationTest {
   private static final Path MAVEN_CONFIG =
       Path.of(System.getProperty("cairn.mavenConfigPath", ".mvn/maven.config"));
 
+  private static final Path JVM_CONFIG =
+      Path.of(System.getProperty("cairn.jvmConfigPath", ".mvn/jvm.config"));
+
   private static final String ENFORCER =
       "/project/build/plugins/plugin[artifactId='maven-enforcer-plugin']";
   private static final String EXECUTION =
@@ -93,6 +96,19 @@ class BuildConfigurationTest {
     String config = Files.exists(MAVEN_CONFIG) ? Files.readString(MAVEN_CONFIG) : "";
 
     assertThat(config).doesNotContain("enforcer.skip");
+  }
+
+  @Test
+  void jvmConfigDoesNotSkipTheEnforcer() throws IOException {
+    String config = Files.exists(JVM_CONFIG) ? Files.readString(JVM_CONFIG) : "";
+
+    assertThat(config).doesNotContain("enforcer.skip");
+  }
+
+  @Test
+  void enforcerPluginIsDeclaredOnce() throws Exception {
+    assertThat(pomHas("count(/project/build/plugins/plugin[artifactId='maven-enforcer-plugin'])=1"))
+        .isTrue();
   }
 
   private static boolean pomHas(String xpath) throws Exception {
