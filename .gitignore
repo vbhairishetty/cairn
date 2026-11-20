@@ -15,3 +15,6 @@ target/
 
 # Local runtime data (documents, database files)
 /data/
+
+# Agent working notes (not committed for now)
+.claude/agent-memory/
