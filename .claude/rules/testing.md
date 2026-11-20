@@ -30,8 +30,8 @@ pass, and would have failed without the change.
 - Property tests (`*Properties.java`) are JUnit `@ParameterizedTest` methods. A `@MethodSource`
   draws a fixed number of inputs (default 1,000) from `new SplittableRandom(SEED)`, where `SEED`
   is a constant in the test class. Each display name includes the seed and case index, so a
-  failure can be reproduced exactly. jqwik is banned from the build (ADR 0006).
-
+  failure can be reproduced exactly. The input generators have their own unit tests. jqwik is
+  banned from the build (ADR 0006).
 - Test names describe behavior: `copayBeforeDeductibleIsChargedEvenWhenDeductibleUnmet()`.
 - Arrange, act, assert, with a blank line between sections. One behavior per test.
 - Use AssertJ (`assertThat`) with specific assertions. For money, compare with
