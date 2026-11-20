@@ -22,6 +22,11 @@ cards (DRAFT to READY) in `/plan-day`.
 
 Created each morning with `/plan-day` from the roadmap in `docs/designs/cairn.md`.
 
+## Notes for later cards
+
+- Day 7 README card: include the known-limitations table from design section 13 (deferred
+  from T-008, review findings R6 and N3).
+
 ## Cut list (first to go)
 
 1. Ask Cairn

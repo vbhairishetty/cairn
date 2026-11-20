@@ -9,8 +9,8 @@ the build skeleton exists. Nothing in the features below works yet.
 
 Cairn is a free, open-source, self-hosted tool. It helps employees choose a health plan, use
 the benefits they already pay for, and avoid coverage gaps, with extra guidance for F-1
-students on OPT and STEM OPT. It runs for one person on their own machine, with one profile
-and no login.
+students on OPT and STEM OPT. It will run for one person on their own machine, with one
+profile and no login.
 
 v0.1.0 is planned to include:
 
@@ -22,14 +22,15 @@ v0.1.0 is planned to include:
 - **Free-benefits checklist.** A personal list of preventive care that costs nothing under
   your plan, with calendar reminders you import as an `.ics` file.
 - **What changed since last year?** A rule-by-rule comparison of two versions of the same plan.
-- **OPT and STEM OPT coverage timeline.** Shows the days without coverage between a school
-  plan and an employer plan, and the rules that apply on those dates, each with its source.
+- **OPT and STEM OPT coverage timeline.** It will show the days without coverage between a
+  school plan and an employer plan, and the rules that apply on those dates, each with its source.
 
 ## Privacy
 
 - Cairn will run only on your machine, and nothing about you will leave it. During setup you
-  will download the Docker image and, if you choose, a local Ollama model. The only connection
-  the app will make is to that model on localhost. None of these will carry your data.
+  will download the Docker image and, if you choose, a local Ollama model. Apart from its own
+  local database, the only connection the app will make is to that model on localhost, so
+  nothing will leave your machine.
 - Cairn will store as little as it can. It will use an age band instead of a birth date, and
   it will not store names, member IDs, email addresses or medical history. It will store a
   coverage tier and, only if you choose the OPT path, a visa category.
