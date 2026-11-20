@@ -34,6 +34,8 @@ v0.1.0 is planned to include:
 - Cairn will store as little as it can. It will use an age band instead of a birth date, and
   it will not store names, member IDs, email addresses or medical history. It will store a
   coverage tier and, only if you choose the OPT path, a visa category.
+  Your uploaded PDFs and the text Cairn extracts from them will be stored locally until you
+  delete them.
 - Delete everything: a button in the app and the `cairn delete-all` command will remove your
   documents, extracted data, estimates, reminders and profile.
 - Cairn will not encrypt stored data itself. It will rely on your computer's disk encryption,
