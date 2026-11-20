@@ -22,10 +22,10 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 0 |
-| Review rounds (total) | 0 |
-| Reviewer findings (High / Medium / Low) | 0 / 0 / 0 |
-| Security findings (High / Medium / Low) | 0 / 0 / 0 |
+| Tasks merged | 1 |
+| Review rounds (total) | 2 |
+| Reviewer findings (High / Medium / Low) | 0 / 1 / 5 |
+| Security findings (High / Medium / Low) | 0 / 0 / 3 |
 | Agent outputs rejected by the orchestrator | 0 |
 | CI failures after local gates passed | 0 |
 
@@ -75,3 +75,31 @@ rewritten except to correct a factual error.
 ## Task log
 
 <!-- /ai-log appends entries here, newest last -->
+
+### T-001: Create the Maven project skeleton with build gates (2026-11-20)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/2
+- Implementer: junior-implementer (Haiku); rounds: 2
+- Reviewer findings: 1 Medium, 5 Low. Most important: R1 [Medium], the JaCoCo agent was never
+  attached to Failsafe (`failsafeArgLine` was read but never set), so integration-test
+  coverage would have been silently dropped from T-003 on. It was fixed with `propertyName`,
+  late replacement and a merged exec file, and proved with a probe class covered only by an
+  `*IT`.
+- Security findings: 3 Low. Most important: S1, the jqwik 1.10.2 test library prints a message
+  addressed to AI agents in every test run. No agent acted on it. It led to new threat TM-14
+  (text in tool output that tries to instruct agents), and keeping jqwik is an open director
+  decision. S2 (more env-file patterns in `.gitignore`) was fixed. S3 (checksum and zip from
+  the same server) was accepted.
+- Rejected: nothing from the agents. Three errors were in the orchestrator's own card: the
+  `"a" == s` example only warns by default; it said to read a `.sha256` file that Maven
+  Central does not publish; and criterion numbers went stale after renumbering (R5).
+- CI: none yet (T-004). All gates were run locally by the implementer, both reviewers and the
+  orchestrator.
+- Director decisions: move from Spring Boot 3.5 (out of OSS support since Jun 30, 2026) to
+  4.1.3 with Modulith 2.1.3 (ADR 0005; the Modulith docs matrix was stale, so compatibility
+  was confirmed from the published POMs); make `ReferenceEquality` and `BigDecimalEquals`
+  errors; take the wrapper SHA-256 from a zip verified against the published SHA-512; run the
+  gates as `clean verify` because JaCoCo appends to its exec files; keep agent notes out of
+  git.
+- Interview note: "The reviewer proved with one probe class that integration coverage was
+  never being recorded. The build looked green, but it would have undercounted every
+  repository test added later."
