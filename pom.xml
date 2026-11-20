@@ -26,9 +26,9 @@
   <properties>
     <java.version>21</java.version>
     <modulith.version>2.1.3</modulith.version>
-    <jqwik.version>1.10.2</jqwik.version>
     <error-prone.version>2.53.0</error-prone.version>
     <google-java-format.version>2.0.0</google-java-format.version>
+    <enforcer.version>3.7.0</enforcer.version>
     <spotless.version>3.11.0</spotless.version>
     <jacoco.version>0.8.16</jacoco.version>
     <!-- Empty defaults so late replacement works when a JaCoCo agent is not attached. -->
@@ -68,12 +68,6 @@
       <artifactId>spring-modulith-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>net.jqwik</groupId>
-      <artifactId>jqwik</artifactId>
-      <version>${jqwik.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -81,6 +75,33 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${enforcer.version}</version>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <searchTransitive>true</searchTransitive>
+                  <excludes>
+                    <exclude>net.jqwik:*</exclude>
+                  </excludes>
+                  <message>net.jqwik is banned, see docs/adr/0006-remove-jqwik.md</message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
