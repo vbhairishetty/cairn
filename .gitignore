@@ -1,0 +1,22 @@
+# Build output and tool caches
+target/
+.jqwik-database
+
+# Secrets: never commit local environment files
+.env
+.env.*
+*.env
+.envrc
+!.env.example
+
+# IDE and OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local runtime data (documents, database files)
+/data/
+
+# Agent working notes (not committed for now)
+.claude/agent-memory/

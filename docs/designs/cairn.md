@@ -188,7 +188,7 @@ Allowed dependencies between modules are listed in `.claude/rules/architecture.m
 
 | Choice | Why |
 | --- | --- |
-| Java 21 + Spring Boot 3 + Maven | Builds on the Java you know; Maven matches your tutorial |
+| Java 21 + Spring Boot 4.1 + Maven (ADR 0005) | Builds on the Java you know; Maven matches your tutorial |
 | Spring Modulith | Turns the modular monolith into a rule the build checks: no reaching into other modules' internals, no cycles |
 | PostgreSQL 16 + Flyway + pgvector | One store for data, provenance, rules, the job queue and the embeddings for Ask Cairn; a schema per module; versioned migrations |
 | Apache PDFBox 3 + Tabula-java | Mature Java PDF libraries |
@@ -504,6 +504,7 @@ Each decision becomes a short ADR file in `docs/adr/`. These are your answers to
 | 13 | Running extraction jobs (ADR 0003) | `extract` implements a `JobHandler` interface from `jobs` | Events only, or a handler interface in `common` | Retries need the handler's result; `common` holds value types only |
 | 14 | Free benefits without sex (review decision) | Filter by age band; label items that depend on sex | Store sex in the profile | Keeps personal data minimal; the user can still see every item |
 | 15 | Reference data for the engine (ADR 0004) | `engine` reads coverage-example claims and seed prices from `rules` | Copy the data into `engine` | One home for versioned, sourced reference data |
+| 16 | Spring Boot line (ADR 0005) | Spring Boot 4.1.x with Spring Modulith 2.1.x | Boot 3.5, 4.0 or 4.2 | 3.5 is out of OSS support, 4.0 support ends Dec 31 2026, 4.2.0 is too new for a one-week build |
 
 ## 10. Development workflow: AI-directed, human-verified
 

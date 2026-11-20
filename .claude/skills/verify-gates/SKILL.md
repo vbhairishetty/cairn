@@ -24,7 +24,7 @@ one failed; run them all so the report is complete, unless the build cannot comp
 | 1 | Format | `./mvnw -q spotless:check` | exit code 0 |
 | 2 | Compile and static checks | `./mvnw -q test-compile` | exit code 0, no Error Prone errors |
 | 3 | Unit, property, golden, architecture and security tests | `./mvnw -q test` | exit code 0, 0 failures, 0 errors |
-| 4 | Integration and API tests, coverage | `./mvnw -q verify` | exit code 0, Failsafe 0 failures, JaCoCo check passed |
+| 4 | Integration and API tests, coverage | `./mvnw -q clean verify` (clean so stale JaCoCo data cannot count) | exit code 0, Failsafe 0 failures, JaCoCo check passed |
 | 5 | Commit hygiene | `git log main..HEAD --format=%B` | no line matching `Co-Authored-By`, `Generated with`, or naming an AI tool; no emoji |
 
 Gate 4 re-runs earlier phases; that is expected. If the project does not have a gate yet
