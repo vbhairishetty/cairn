@@ -22,11 +22,11 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 1 |
-| Review rounds (total) | 2 |
-| Reviewer findings (High / Medium / Low) | 0 / 1 / 5 |
-| Security findings (High / Medium / Low) | 0 / 0 / 3 |
-| Agent outputs rejected by the orchestrator | 0 |
+| Tasks merged | 2 |
+| Review rounds (total) | 4 |
+| Reviewer findings (High / Medium / Low) | 0 / 2 / 14 |
+| Security findings (High / Medium / Low) | 0 / 0 / 6 |
+| Agent outputs rejected by the orchestrator | 1 |
 | CI failures after local gates passed | 0 |
 
 ## Design reviews
@@ -103,3 +103,26 @@ rewritten except to correct a factual error.
 - Interview note: "The reviewer proved with one probe class that integration coverage was
   never being recorded. The build looked green, but it would have undercounted every
   repository test added later."
+
+### T-008: Add the README and the Apache-2.0 license (2026-11-20)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/3
+- Implementer: junior-implementer (Haiku); rounds: 2
+- Reviewer findings: 1 Medium, 9 Low. Most important: R1 [Medium], the README promised that
+  "every number will link to the line in the PDF", but the design's sources include values the
+  user enters, labeled price assumptions and computed totals. The sentence now names all of
+  them. The reviewer also found that CLAUDE.md rule 5 had the same overstatement; the director
+  had it reworded in T-009.
+- Security findings: 3 Low. Most important: S2, the Privacy section did not say that uploaded
+  PDFs and their extracted text are stored locally until deleted; a sentence was added. S1
+  (keep the connection wording in sync as features land) was recorded in TASKS.md. S3
+  (personal email in public commit metadata) led the director to switch to the GitHub no-reply
+  address.
+- Rejected: one implementer claim. It reported that CLAUDE.md still said "Spring Boot 3" and
+  listed Redis. The orchestrator checked the file on disk and found this false (it already
+  said Spring Boot 4.1 and no Redis); the agent had relied on an outdated copy.
+- CI: none yet (T-004). Gates were run locally by the implementer, the reviewer and the
+  orchestrator.
+- Director decisions: Apache-2.0 license; no personal origin story in the public README; an
+  honest "in development" status with only working build steps.
+- Interview note: "The reviewer caught the README promising more provenance than the design
+  delivers, and the same overstatement turned up in the project's own rules."
