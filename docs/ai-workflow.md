@@ -22,10 +22,10 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 2 |
-| Review rounds (total) | 4 |
-| Reviewer findings (High / Medium / Low) | 0 / 2 / 14 |
-| Security findings (High / Medium / Low) | 0 / 0 / 6 |
+| Tasks merged | 3 |
+| Review rounds (total) | 12 |
+| Reviewer findings (High / Medium / Low) | 0 / 8 / 37 |
+| Security findings (High / Medium / Low) | 0 / 3 / 10 |
 | Agent outputs rejected by the orchestrator | 1 |
 | CI failures after local gates passed | 0 |
 
@@ -126,3 +126,42 @@ rewritten except to correct a factual error.
   honest "in development" status with only working build steps.
 - Interview note: "The reviewer caught the README promising more provenance than the design
   delivers, and the same overstatement turned up in the project's own rules."
+
+### T-009: Remove jqwik, ban it in the build, and reword rule 5 (2026-11-21)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/4
+- Implementer: sde1-implementer (Sonnet); rounds: 8. The task loop's limit is 3; the director
+  approved each extension.
+- Reviewer findings: 6 Medium, 23 Low, across three independent reviewers (one restarted with
+  the session). Most important: the guard tests kept passing while the ban was disabled. In
+  turn the reviewers found skip or fail settings, WARN level, an includes allow-list, profiles,
+  property-valued settings, a split execution, `.mvn/jvm.config` skips, jqwik on the Surefire
+  classpath, a local parent pom, `.mvn/maven.config` redirects and interpolated plugin keys.
+  Rounds 1 to 4 added one check per bypass. After the security review failed, round 5 replaced
+  that blocklist with an allowlist: the Enforcer block must match one approved shape, and
+  everything else that could reach a classpath is rejected. The test cases became anchored
+  edits of the live build files instead of 24 committed pom copies.
+- Security findings: 3 Medium, 4 Low, over three security reviews (FAIL, FAIL, PASS).
+  - Most important: the guard only read `/project/build/plugins`, so `pluginManagement` or
+    plugin-level settings turned the ban off.
+  - Test-only system properties could point the guards at a decoy pom from a committed
+    `.mvn/maven.config`.
+  - Both were fixed. Four Low gaps remain, recorded in TM-14, for the T-004 CI check.
+- Rejected: one implementer proposal. It asked to exempt the `enforcer.version` property from
+  the property rule; the orchestrator inlined the version instead, so the allowlist has no
+  exceptions. Also recorded: an implementer once discarded its own uncommitted pom edits with
+  `git checkout` and restored them from a backup; later prompts forbade that command on
+  uncommitted work. A reviewer probe left a fake artifact in the shared Maven cache, which made
+  a later probe pass for the wrong reason. The director approved deleting it, and probes moved
+  to an isolated local repository.
+- CI: none yet (T-004). Gates were run locally by the implementer, every reviewer and the
+  orchestrator.
+- Director decisions:
+  - remove jqwik rather than keep or silence it (ADR 0006)
+  - reword CLAUDE.md rule 5 to the design's four kinds of source
+  - ban with Maven Enforcer now; the Dependabot ignore rule goes to T-004
+  - extend past the round limit several times; approve the allowlist redesign
+  - delete the stray probe artifact
+  - open the pull request only after security passes
+- Interview note: "Reviewers found more than a dozen ways to switch off a one-line build
+  ban, and the fix that ended it was to stop listing bad configurations and allow only the one
+  good one, with the real proof being a CI job that tries to add the banned library."
