@@ -46,10 +46,18 @@ supply-chain control.
 3. Given a temporary direct dependency on `net.jqwik:jqwik:1.10.2` (test scope) added to the
    pom, When `./mvnw clean verify` runs, Then the build fails in the Enforcer step and names
    the banned artifact. *(Evidence in the report; the change is reverted, not committed.)*
-4. Given `BuildConfigurationTest`, When `./mvnw test` runs, Then a new test
-   `buildBansJqwik` passes. It parses `pom.xml` with the JDK's XML parser (no new
-   dependency) and asserts that an Enforcer `bannedDependencies` rule lists `net.jqwik:*` in
-   its `excludes`. Test first: it fails before the Enforcer configuration exists.
+4. Given the build files, When `./mvnw test` runs, Then `BuildGuard.violations(pom,
+   mavenConfig, jvmConfig)` reports nothing for the real `pom.xml`, `.mvn/maven.config` and
+   `.mvn/jvm.config` (`BuildConfigurationTest#buildGuardFindsNoViolationsInTheRealBuildFiles`).
+   BuildGuard is a closed allowlist. The Enforcer plugin is declared exactly once anywhere in
+   the pom, under `build/plugins`, and its subtree matches one approved shape. There are no
+   `enforcer.*` properties, no "jqwik" outside that shape, the standard Spring Boot parent has
+   an empty `relativePath`, and the `.mvn` files do not mention enforcer, `cairn.` or jqwik.
+   `JqwikBanSecurityTest` applies one anchored edit per known bypass to the live pom and
+   requires the matching violation. Test first: the new cases fail on the earlier guard.
+   *(Changed in review: the first design, a single `buildBansJqwik` XPath check, was bypassed
+   repeatedly. On 2026-11-21 the director approved the allowlist redesign after the security
+   review failed it.)*
 5. Given the full test run, When `./mvnw clean verify` runs, Then the output contains no line
    from jqwik, and all gates pass.
 
@@ -67,7 +75,9 @@ supply-chain control.
 | --- | --- | --- |
 | modify | `pom.xml` | remove jqwik; add `maven-enforcer-plugin` with the ban |
 | modify | `.gitignore` | remove `.jqwik-database` |
-| modify | `src/test/java/app/cairn/BuildConfigurationTest.java` | add `buildBansJqwik` |
+| modify | `src/test/java/app/cairn/BuildConfigurationTest.java` | live-files guard test |
+| create | `src/test/java/app/cairn/BuildGuard.java` | allowlist check of the pom and `.mvn` files |
+| create | `src/test/java/app/cairn/JqwikBanSecurityTest.java` | one generated case per known bypass (TM-14) |
 
 ## Public API
 
@@ -82,7 +92,8 @@ none.
 
 | Test | Level | Covers criteria |
 | --- | --- | --- |
-| `BuildConfigurationTest#buildBansJqwik` | unit (reads `pom.xml`) | 2, 4 |
+| `BuildConfigurationTest#buildGuardFindsNoViolationsInTheRealBuildFiles` | unit | 2, 4 |
+| `JqwikBanSecurityTest` (generated cases plus an unedited base case) | security | 2, 4 |
 | Temporary jqwik dependency makes `clean verify` fail in Enforcer (not committed) | build | 3 |
 | `./mvnw clean verify` output has no jqwik line | build | 1, 5 |
 
