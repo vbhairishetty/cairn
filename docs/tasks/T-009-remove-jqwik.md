@@ -51,8 +51,10 @@ supply-chain control.
    `.mvn/jvm.config` (`BuildConfigurationTest#buildGuardFindsNoViolationsInTheRealBuildFiles`).
    BuildGuard is a closed allowlist. The Enforcer plugin is declared exactly once anywhere in
    the pom, under `build/plugins`, and its subtree matches one approved shape. There are no
-   `enforcer.*` properties, no "jqwik" outside that shape, the standard Spring Boot parent has
-   an empty `relativePath`, and the `.mvn` files do not mention enforcer, `cairn.` or jqwik.
+   `enforcer.*` properties, no "jqwik" outside that shape, no dependencies or classpath
+   settings on Surefire or Failsafe, no `${` in dependency coordinates, the standard Spring Boot
+   parent has an empty `relativePath`, `.mvn/maven.config` is absent or blank, and
+   `.mvn/jvm.config` equals the committed lines.
    `JqwikBanSecurityTest` applies one anchored edit per known bypass to the live pom and
    requires the matching violation. Test first: the new cases fail on the earlier guard.
    *(Changed in review: the first design, a single `buildBansJqwik` XPath check, was bypassed
