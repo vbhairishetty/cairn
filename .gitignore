@@ -1,6 +1,5 @@
 # Build output and tool caches
 target/
-.jqwik-database
 
 # Secrets: never commit local environment files
 .env

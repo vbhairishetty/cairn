@@ -16,7 +16,8 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-005 | `common.Money` and `SourceRef` value types with property tests | sde2-implementer | DRAFT | T-002 |
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | DRAFT | - |
 | T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | DRAFT | - |
-| T-008 | README and Apache-2.0 license | junior-implementer | IN_REVIEW | T-001 |
+| T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
+| T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | IN_REVIEW | T-001 |
 
 ## Day 2 onward
 
@@ -26,6 +27,18 @@ Created each morning with `/plan-day` from the roadmap in `docs/designs/cairn.md
 
 - Day 7 README card: include the known-limitations table from design section 13 (deferred
   from T-008, review findings R6 and N3).
+- T-004: the Dependabot config must ignore `net.jqwik:*` (ADR 0006).
+- T-004: add a behavioral CI check for the jqwik ban: copy the whole repo (pom and `.mvn/`), add
+  `net.jqwik:jqwik` as a direct dependency, run `./mvnw validate` with an explicit command line
+  and empty `MAVEN_OPTS`, and require it to fail with the ban message (`net.jqwik is banned`),
+  not just any failure (T-009 review, director decision; N1).
+  The same job also runs the real repo's `./mvnw test` and fails if the output contains
+  "jqwik" anywhere other than the test class name `JqwikBanSecurityTest` (T-009 review R10, N4).
+  This also closes the known guard gaps: Surefire excludes that skip the guard tests, an
+  edited `mvnw.cmd`, build extensions declared in the pom, and a system-scope dependency
+  pointing at a cached jqwik jar (T-009 review N2, D2, D3; security S1 round 8).
+- Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
+  `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and
   keep Chart.js and Swagger UI assets bundled locally, never from a CDN (T-008 security S1).
 

@@ -17,4 +17,9 @@ class BuildConfigurationTest {
         .contains("-Xep:ReferenceEquality:ERROR")
         .contains("-Xep:BigDecimalEquals:ERROR");
   }
+
+  @Test
+  void buildGuardFindsNoViolationsInTheRealBuildFiles() throws Exception {
+    assertThat(BuildGuard.violations(BuildGuard.BuildFiles.under(Path.of(".")))).isEmpty();
+  }
 }

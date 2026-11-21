@@ -195,7 +195,7 @@ Allowed dependencies between modules are listed in `.claude/rules/architecture.m
 | Thymeleaf + Chart.js + Spring Security | A usable, safe UI in a day, without learning React this week |
 | iCal4j | Standard-compliant `.ics` calendar files |
 | springdoc-openapi | OpenAPI docs for the REST API |
-| JUnit 5, AssertJ, Mockito, jqwik, Testcontainers | The full test pyramid with a real Postgres, plus property-based tests for the engine |
+| JUnit 5, AssertJ, Mockito, Testcontainers | The full test pyramid with a real Postgres, plus property-based tests for the engine |
 | Spotless (Google Java Style) + Error Prone | Consistent formatting and compile-time bug detection on every build |
 | CodeQL, Dependabot, secret scanning, Trivy | Free automated security checks on every pull request and image |
 | GitHub Actions + GHCR | CI on every pull request, the weekly Rule Watcher, and a Docker image on each release tag |
@@ -384,7 +384,7 @@ Only the deductible part of a payment reduces the deductible; copays and coinsur
 | Check | What it proves | Tool |
 | --- | --- | --- |
 | Unit tests per step | Each of the 6 steps above behaves exactly as written, including an event that spans the deductible | JUnit 5 + AssertJ |
-| Property-based tests | Invariants hold for thousands of random plans: in-network cost (excluding "not covered") never exceeds premiums plus the maximum, more usage never costs less, in-network preventive care is always $0, results are deterministic, scenario order low ≤ expected ≤ high | jqwik |
+| Property-based tests | Invariants hold for thousands of random plans: in-network cost (excluding "not covered") never exceeds premiums plus the maximum, more usage never costs less, in-network preventive care is always $0, results are deterministic, scenario order low ≤ expected ≤ high | JUnit `@ParameterizedTest` with a fixed-seed generator (ADR 0006) |
 | Coverage-example reconciliation | Running the SBC's own example scenarios reproduces the totals the insurer printed, within $50 per scenario | Golden-file tests on real SBCs |
 | Hand-calculated cases | Three plans worked out on paper by you, committed as expected results | JUnit 5 |
 
@@ -466,7 +466,7 @@ Privacy is the first design constraint: nothing about the user leaves their mach
 | Level | What it covers | Tools | Count by Day 4 | Count by Day 7 |
 | --- | --- | --- | --- | --- |
 | Unit | Cost-sharing parser, money parsing, engine steps, timeline gap math, rule lookup by date | JUnit 5, AssertJ, Mockito | 40+ | 70+ |
-| Property-based | Engine invariants across random plans | jqwik | 5 properties | 5+ properties |
+| Property-based | Engine invariants across random plans | JUnit `@ParameterizedTest` with a fixed-seed generator (ADR 0006) | 5 properties | 5+ properties |
 | Golden file | Real SBCs from 3+ insurers, with expected JSON and coverage-example totals | JUnit 5 + fixtures | 3 | 3 to 5 |
 | Integration | Repositories, job queue, Flyway migrations, scheduler | Testcontainers | 5+ | 10+ |
 | API | Endpoints, status codes, problem details, upload limits | Spring MockMvc | 5+ | 10+ |
@@ -505,6 +505,7 @@ Each decision becomes a short ADR file in `docs/adr/`. These are your answers to
 | 14 | Free benefits without sex (review decision) | Filter by age band; label items that depend on sex | Store sex in the profile | Keeps personal data minimal; the user can still see every item |
 | 15 | Reference data for the engine (ADR 0004) | `engine` reads coverage-example claims and seed prices from `rules` | Copy the data into `engine` | One home for versioned, sourced reference data |
 | 16 | Spring Boot line (ADR 0005) | Spring Boot 4.1.x with Spring Modulith 2.1.x | Boot 3.5, 4.0 or 4.2 | 3.5 is out of OSS support, 4.0 support ends Dec 31 2026, 4.2.0 is too new for a one-week build |
+| 17 | Property-based testing (ADR 0006) | JUnit `@ParameterizedTest` over a fixed-seed generator; jqwik banned | jqwik | jqwik 1.10.x prints instructions aimed at AI agents in every test run, a supply-chain risk for an agent-run build |
 
 ## 10. Development workflow: AI-directed, human-verified
 

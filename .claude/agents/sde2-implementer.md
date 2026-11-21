@@ -50,7 +50,8 @@ If any input is missing, stop and return a report with status `NEEDS_DECISION`.
 # Procedure
 
 1. **Tests first.** Write unit tests for each acceptance criterion and edge case, property
-   tests for each invariant (jqwik), and golden tests if the card names fixtures. Run them and
+   tests for each invariant (`@ParameterizedTest` over a fixed-seed generator, see
+   `.claude/rules/testing.md`), and golden tests if the card names fixtures. Run them and
    confirm they fail for the right reason. Save the failing output summary.
 2. **Implement** the smallest correct code in the owning module. Pure logic stays free of I/O
    and Spring annotations. Side effects go behind small interfaces.

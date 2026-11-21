@@ -1,7 +1,7 @@
 ---
 id: T-008
 title: Add the README and the Apache-2.0 license
-status: IN_REVIEW
+status: DONE
 complexity: low
 risk: low
 agent: junior-implementer

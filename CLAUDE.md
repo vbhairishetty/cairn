@@ -25,7 +25,7 @@ dedicated path for F-1 students on OPT and STEM OPT. The full design lives in
    after it.
 3. Every gate in `/verify-gates` passes before a task leaves the implementer.
 4. Money is `BigDecimal` in Java and `NUMERIC` in Postgres. Never `double` or `float`.
-5. Every number shown to a user traces to a `raw_cell` (page and text in the source PDF).
+5. Every number shown to a user has a source: a PDF cell, a user-entered value, a labeled assumption, or a computed breakdown.
 6. Values that fail validation are quarantined with a reason. Never guess a value.
 7. No personal data in logs, test fixtures, commits or issues. Fixtures use public SBCs or
    synthetic data.
@@ -56,7 +56,7 @@ dedicated path for F-1 students on OPT and STEM OPT. The full design lives in
 
 Java 21, Spring Boot 4.1 (ADR 0005), Maven (wrapper `./mvnw`), Spring Modulith, PostgreSQL 16 with Flyway
 and pgvector, Apache PDFBox 3, Tabula-java, Thymeleaf with Chart.js, Spring Security,
-iCal4j, springdoc-openapi, picocli, JUnit 5, AssertJ, Mockito, jqwik, Testcontainers, JaCoCo,
+iCal4j, springdoc-openapi, picocli, JUnit 5, AssertJ, Mockito, Testcontainers, JaCoCo,
 Spotless (Google Java Style), Error Prone, Docker Compose on Colima, GitHub Actions, CodeQL,
 Dependabot, Trivy, Mailpit (email stretch goal only), Ollama (optional, local only).
 Redis is not used in v1 (ADR 0001).
