@@ -37,7 +37,8 @@ class JqwikBanSecurityTest {
         "maven-config-skip",
         "jvm-config-skip",
         "maven-config-pom-path",
-        "system-property-variables"
+        "system-property-variables",
+        "enforcer-version-property"
       })
   void weakenedBuildIsReported(String fixture) throws Exception {
     Path dir = FIXTURES.resolve(fixture);

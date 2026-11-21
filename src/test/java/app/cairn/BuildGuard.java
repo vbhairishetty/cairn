@@ -25,12 +25,13 @@ final class BuildGuard {
 
   private static final String ENFORCER_ID = "normalize-space(artifactId)='maven-enforcer-plugin'";
 
+  // A plugin version bump must update this approved shape and the pom together.
   private static final String APPROVED_PLUGIN =
       """
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${enforcer.version}</version>
+        <version>3.7.0</version>
         <executions>
           <execution>
             <id>enforce-banned-dependencies</id>
@@ -74,14 +75,8 @@ final class BuildGuard {
       found.add("maven-enforcer-plugin differs from the approved configuration in BuildGuard");
     }
 
-    // enforcer.version is the one allowed property, and only in the top-level properties.
-    if (count(
-            document,
-            "//properties/*[starts-with(name(),'enforcer.')"
-                + " and not(name()='enforcer.version' and ../parent::project)]")
-        > 0) {
-      found.add(
-          "a pom property starts with enforcer. (only the top-level enforcer.version is allowed)");
+    if (count(document, "//properties/*[starts-with(name(),'enforcer.')]") > 0) {
+      found.add("a pom property starts with enforcer.");
     }
     if (count(
             document,
