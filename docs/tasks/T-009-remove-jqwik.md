@@ -1,7 +1,7 @@
 ---
 id: T-009
 title: Remove jqwik, ban it in the build, and reword rule 5
-status: IN_PROGRESS
+status: IN_REVIEW
 complexity: low
 risk: medium
 agent: sde1-implementer

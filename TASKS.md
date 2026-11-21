@@ -17,7 +17,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | DRAFT | - |
 | T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | DRAFT | - |
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
-| T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | IN_PROGRESS | T-001 |
+| T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | IN_REVIEW | T-001 |
 
 ## Day 2 onward
 
