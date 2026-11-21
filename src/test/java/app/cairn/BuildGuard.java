@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeMap;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,7 +26,8 @@ final class BuildGuard {
 
   private static final String ENFORCER_ID = "normalize-space(artifactId)='maven-enforcer-plugin'";
 
-  // A plugin version bump must update this approved shape and the pom together.
+  // A plugin version bump must update this approved shape and the pom together. The comparison is
+  // order-sensitive on purpose: a reordered plugin is reported, which fails safe.
   private static final String APPROVED_PLUGIN =
       """
       <plugin>
@@ -75,6 +77,19 @@ final class BuildGuard {
       found.add("maven-enforcer-plugin differs from the approved configuration in BuildGuard");
     }
 
+    if (count(
+            document,
+            "/project/parent[groupId='org.springframework.boot'"
+                + " and artifactId='spring-boot-starter-parent'"
+                + " and relativePath and normalize-space(relativePath)='']")
+        != 1) {
+      found.add("parent must be spring-boot-starter-parent with an empty relativePath");
+    }
+    // Enforcer sees project dependencies only, so jqwik elsewhere (for example as a Surefire
+    // plugin dependency) would reach the test classpath unnoticed.
+    if (mentionsJqwik(document, enforcerPlugin(document))) {
+      found.add("jqwik appears outside the approved enforcer plugin");
+    }
     if (count(document, "//properties/*[starts-with(name(),'enforcer.')]") > 0) {
       found.add("a pom property starts with enforcer.");
     }
@@ -96,21 +111,56 @@ final class BuildGuard {
 
   private static void checkConfig(Path file, List<String> found) throws IOException {
     String text = Files.exists(file) ? Files.readString(file) : "";
-    if (text.contains("enforcer") || text.contains("cairn.")) {
-      found.add(file.getFileName() + " mentions enforcer or cairn.");
+    if (text.contains("enforcer")
+        || text.contains("cairn.")
+        || text.toLowerCase(Locale.ROOT).contains("jqwik")) {
+      found.add(file.getFileName() + " mentions enforcer, cairn. or jqwik");
     }
   }
 
   private static String shape(Document document) throws XPathExpressionException {
-    Node plugin =
-        (Node)
-            XPathFactory.newInstance()
-                .newXPath()
-                .evaluate(
-                    "/project/build/plugins/plugin[" + ENFORCER_ID + "]",
-                    document,
-                    XPathConstants.NODE);
-    return canonical(plugin);
+    return canonical(enforcerPlugin(document));
+  }
+
+  private static Node enforcerPlugin(Document document) throws XPathExpressionException {
+    return (Node)
+        XPathFactory.newInstance()
+            .newXPath()
+            .evaluate(
+                "/project/build/plugins/plugin[" + ENFORCER_ID + "]",
+                document,
+                XPathConstants.NODE);
+  }
+
+  // Checks names, values, attributes and comments of every node except the skipped subtree.
+  private static boolean mentionsJqwik(Node node, Node skipped) {
+    if (node.isSameNode(skipped)) {
+      return false;
+    }
+    boolean here =
+        node.getNodeName().toLowerCase(Locale.ROOT).contains("jqwik")
+            || (node.getNodeValue() != null
+                && node.getNodeValue().toLowerCase(Locale.ROOT).contains("jqwik"));
+    return here || attributesMention(node) || childrenMention(node, skipped);
+  }
+
+  private static boolean attributesMention(Node node) {
+    NamedNodeMap attributes = node.getAttributes();
+    for (int i = 0; attributes != null && i < attributes.getLength(); i++) {
+      if (mentionsJqwik(attributes.item(i), null)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean childrenMention(Node node, Node skipped) {
+    for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+      if (mentionsJqwik(child, skipped)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static int count(Document document, String xpath) throws XPathExpressionException {
