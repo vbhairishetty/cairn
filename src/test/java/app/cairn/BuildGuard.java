@@ -3,7 +3,10 @@ package app.cairn;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -74,10 +77,44 @@ final class BuildGuard {
           "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
           "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED");
 
+  // A Maven wrapper upgrade must update both hashes together with the files.
+  private static final String MVNW_SHA256 =
+      "cae96cef89ebea3531221f4ae17c23cf8edf67d00eae8306d4186ae1bbed4d02";
+  private static final String WRAPPER_PROPERTIES_SHA256 =
+      "9e702bcd7e68ba1cace0a3382a7082e6e1e1b321688a7a3fbf4d5ae7eb0af533";
+
   private BuildGuard() {}
 
-  static List<String> violations(Path pom, Path mavenConfig, Path jvmConfig) throws Exception {
+  /** The build files the guard reads. Paths are explicit so tests can point at edited copies. */
+  record BuildFiles(
+      Path pom,
+      Path mavenConfig,
+      Path jvmConfig,
+      Path extensionsXml,
+      Path mvnw,
+      Path wrapperProperties) {
+
+    static BuildFiles under(Path root) {
+      return new BuildFiles(
+          root.resolve("pom.xml"),
+          root.resolve(".mvn/maven.config"),
+          root.resolve(".mvn/jvm.config"),
+          root.resolve(".mvn/extensions.xml"),
+          root.resolve("mvnw"),
+          root.resolve(".mvn/wrapper/maven-wrapper.properties"));
+    }
+  }
+
+  static List<String> violations(BuildFiles files) throws Exception {
     List<String> found = new ArrayList<>();
+    checkPom(files.pom(), found);
+    checkMavenConfig(files.mavenConfig(), found);
+    checkJvmConfig(files.jvmConfig(), found);
+    checkWrapperFiles(files, found);
+    return found;
+  }
+
+  private static void checkPom(Path pom, List<String> found) throws Exception {
     Document document = parse(Files.readString(pom));
 
     int everywhere = count(document, "//plugin[" + ENFORCER_ID + "]");
@@ -120,15 +157,35 @@ final class BuildGuard {
           "surefire or failsafe plugin declares dependencies or classpath settings;"
               + " they bypass the Enforcer");
     }
-    // Interpolation could assemble a banned coordinate from properties.
-    if (count(document, "//dependency/*[self::groupId or self::artifactId][contains(.,'${')]")
-        > 0) {
-      found.add("a dependency groupId or artifactId contains ${");
+    // Interpolation could build a plugin or dependency coordinate from a property, for example to
+    // reach a second, skipped Enforcer declaration or a split jqwik name.
+    if (count(document, "//*[self::groupId or self::artifactId][contains(.,'${')]") > 0) {
+      found.add("a groupId or artifactId contains ${");
     }
+  }
 
-    checkMavenConfig(mavenConfig, found);
-    checkJvmConfig(jvmConfig, found);
-    return found;
+  // The wrapper scripts and extensions run before the pom is read, so they can disable the
+  // Enforcer without touching a guarded file.
+  private static void checkWrapperFiles(BuildFiles files, List<String> found)
+      throws IOException, NoSuchAlgorithmException {
+    if (Files.exists(files.extensionsXml())) {
+      found.add(".mvn/extensions.xml must be absent");
+    }
+    checkPinned(files.mvnw(), MVNW_SHA256, found);
+    checkPinned(files.wrapperProperties(), WRAPPER_PROPERTIES_SHA256, found);
+  }
+
+  private static void checkPinned(Path file, String sha256, List<String> found)
+      throws IOException, NoSuchAlgorithmException {
+    if (!Files.exists(file)) {
+      found.add(file.getFileName() + " must exist");
+    } else if (!sha256(Files.readAllBytes(file)).equals(sha256)) {
+      found.add(file.getFileName() + " differs from the pinned SHA-256 in BuildGuard");
+    }
+  }
+
+  private static String sha256(byte[] bytes) throws NoSuchAlgorithmException {
+    return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
   }
 
   // Maven reads .mvn/maven.config as command-line arguments (-f, -s, -D), so any content could
@@ -233,6 +290,9 @@ final class BuildGuard {
 
   private static Document parse(String xml) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    // Comments and CDATA must not split a word across text nodes.
+    factory.setIgnoringComments(true);
+    factory.setCoalescing(true);
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
     return factory.newDocumentBuilder().parse(new InputSource(new java.io.StringReader(xml)));

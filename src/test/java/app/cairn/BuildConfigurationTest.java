@@ -20,9 +20,6 @@ class BuildConfigurationTest {
 
   @Test
   void buildGuardFindsNoViolationsInTheRealBuildFiles() throws Exception {
-    assertThat(
-            BuildGuard.violations(
-                Path.of("pom.xml"), Path.of(".mvn/maven.config"), Path.of(".mvn/jvm.config")))
-        .isEmpty();
+    assertThat(BuildGuard.violations(BuildGuard.BuildFiles.under(Path.of(".")))).isEmpty();
   }
 }

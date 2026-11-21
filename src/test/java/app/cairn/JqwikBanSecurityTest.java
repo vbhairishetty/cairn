@@ -2,8 +2,11 @@ package app.cairn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -26,9 +29,19 @@ class JqwikBanSecurityTest {
   private static final String PARENT = "parent must be spring-boot-starter-parent";
   private static final String TEST_PLUGIN_DEPENDENCIES =
       "surefire or failsafe plugin declares dependencies";
-  private static final String INTERPOLATED = "dependency groupId or artifactId contains ${";
+  private static final String INTERPOLATED = "groupId or artifactId contains ${";
   private static final String MAVEN_CONFIG = "maven.config must be absent or blank";
   private static final String JVM_CONFIG = "jvm.config differs from the committed lines";
+  private static final String MAVEN_CONFIG_PATH = ".mvn/maven.config";
+  private static final String JVM_CONFIG_PATH = ".mvn/jvm.config";
+  private static final String MVNW_PATH = "mvnw";
+  private static final String WRAPPER_PATH = ".mvn/wrapper/maven-wrapper.properties";
+  private static final String EXTENSIONS_PATH = ".mvn/extensions.xml";
+  private static final List<String> LIVE_FILES =
+      List.of(
+          "pom.xml", MAVEN_CONFIG_PATH, JVM_CONFIG_PATH, MVNW_PATH, WRAPPER_PATH, EXTENSIONS_PATH);
+  private static final String WRAPPER_FILES = "differs from the pinned SHA-256";
+  private static final String EXTENSIONS = ".mvn/extensions.xml must be absent";
   private static final String JQWIK_DEPENDENCY =
       "<dependency><groupId>net.jqwik</groupId><artifactId>jqwik</artifactId>"
           + "<version>1.10.2</version></dependency>";
@@ -38,47 +51,47 @@ class JqwikBanSecurityTest {
           + "<configuration><skip>true</skip></configuration></plugin></plugins></build>"
           + "</profile></profiles>";
 
-  record Case(
-      String expected,
-      UnaryOperator<String> pomEdit,
-      String mavenConfig,
-      UnaryOperator<String> jvmConfigEdit) {}
+  // Edits map a path under the repo root to a change of that file's live text. A file that is
+  // absent live starts as empty text, so an edit can create it.
+  record Case(String expected, Map<String, UnaryOperator<String>> edits) {}
 
   @TempDir Path dir;
 
   @ParameterizedTest(name = "{argumentSetName} is reported")
   @MethodSource("weakenedBuilds")
   void weakenedBuildIsReported(Case weakened) throws Exception {
-    Path pom = dir.resolve("pom.xml");
-    Files.writeString(pom, weakened.pomEdit().apply(Files.readString(Path.of("pom.xml"))));
-    Files.writeString(dir.resolve("maven.config"), weakened.mavenConfig());
-    Files.writeString(
-        dir.resolve("jvm.config"),
-        weakened.jvmConfigEdit().apply(Files.readString(Path.of(".mvn/jvm.config"))));
+    copyLiveFiles(dir, weakened.edits());
 
-    assertThat(BuildGuard.violations(pom, dir.resolve("maven.config"), dir.resolve("jvm.config")))
+    assertThat(BuildGuard.violations(BuildGuard.BuildFiles.under(dir)))
         .anySatisfy(violation -> assertThat(violation).contains(weakened.expected()));
   }
 
   @Test
   void unchangedLiveBuildFilesAreNotReported() throws Exception {
-    Path pom = dir.resolve("pom.xml");
-    Files.writeString(pom, Files.readString(Path.of("pom.xml")));
+    copyLiveFiles(dir, Map.of());
 
-    assertThat(
-            BuildGuard.violations(pom, dir.resolve("absent.config"), dir.resolve("absent2.config")))
-        .isEmpty();
+    assertThat(BuildGuard.violations(BuildGuard.BuildFiles.under(dir))).isEmpty();
   }
 
   @Test
-  void committedJvmConfigAndBlankMavenConfigAreNotReported() throws Exception {
-    Path pom = dir.resolve("pom.xml");
-    Files.writeString(pom, Files.readString(Path.of("pom.xml")));
-    Files.writeString(dir.resolve("maven.config"), "\n  \n");
-    Files.writeString(dir.resolve("jvm.config"), Files.readString(Path.of(".mvn/jvm.config")));
+  void blankMavenConfigIsNotReported() throws Exception {
+    copyLiveFiles(dir, Map.of(MAVEN_CONFIG_PATH, live -> "\n  \n"));
 
-    assertThat(BuildGuard.violations(pom, dir.resolve("maven.config"), dir.resolve("jvm.config")))
-        .isEmpty();
+    assertThat(BuildGuard.violations(BuildGuard.BuildFiles.under(dir))).isEmpty();
+  }
+
+  private static void copyLiveFiles(Path target, Map<String, UnaryOperator<String>> edits)
+      throws IOException {
+    for (String path : LIVE_FILES) {
+      Path source = Path.of(path);
+      String text = Files.exists(source) ? Files.readString(source) : "";
+      String written = edits.getOrDefault(path, UnaryOperator.identity()).apply(text);
+      if (Files.exists(source) || !written.isEmpty()) {
+        Path copy = target.resolve(path);
+        Files.createDirectories(copy.getParent());
+        Files.writeString(copy, written);
+      }
+    }
   }
 
   static Stream<Arguments> weakenedBuilds() {
@@ -232,6 +245,44 @@ class JqwikBanSecurityTest {
                 "<dependencies>\n    <dependency>",
                 "<dependencies>\n    <dependency><groupId>net.${g}</groupId>"
                     + "<artifactId>x</artifactId></dependency>\n    <dependency>")),
+        pomCase(
+            "plugin-management-interpolated-enforcer-skip",
+            INTERPOLATED,
+            both(
+                edit("<java.version>", "<e>enforcer</e><java.version>"),
+                edit(
+                    "<build>",
+                    "<build><pluginManagement><plugins><plugin><groupId>org.apache.maven.plugins"
+                        + "</groupId><artifactId>maven-${e}-plugin</artifactId><configuration>"
+                        + "<skip>true</skip></configuration></plugin></plugins>"
+                        + "</pluginManagement>"))),
+        pomCase(
+            "dependency-comment-split-jqwik",
+            OUTSIDE,
+            edit(
+                "<dependencies>\n    <dependency>",
+                "<dependencies>\n    <dependency><groupId>net.jq<!-- -->wik</groupId>"
+                    + "<artifactId>jq<!-- -->wik</artifactId><version>1.10.2</version>"
+                    + "</dependency>\n    <dependency>")),
+        pomCase(
+            "dependency-cdata-split-jqwik",
+            OUTSIDE,
+            edit(
+                "<dependencies>\n    <dependency>",
+                "<dependencies>\n    <dependency><groupId>net.jq<![CDATA[wik]]></groupId>"
+                    + "<artifactId>jq<![CDATA[wik]]></artifactId><version>1.10.2</version>"
+                    + "</dependency>\n    <dependency>")),
+        pomCase(
+            "surefire-second-block-interpolated-artifact-id",
+            INTERPOLATED,
+            both(
+                edit("<java.version>", "<s>surefire</s><java.version>"),
+                edit(
+                    "<artifactId>maven-failsafe-plugin</artifactId>",
+                    "<artifactId>maven-${s}-plugin</artifactId><configuration><skip>true"
+                        + "</skip></configuration></plugin><plugin><groupId>"
+                        + "org.apache.maven.plugins</groupId>"
+                        + "<artifactId>maven-failsafe-plugin</artifactId>"))),
         pomCase("relative-path-removed", PARENT, edit("<relativePath/>", "")),
         pomCase(
             "parent-artifact-changed",
@@ -243,26 +294,30 @@ class JqwikBanSecurityTest {
             "local-parent",
             PARENT,
             edit("<relativePath/>", "<relativePath>../parent/pom.xml</relativePath>")),
-        configCase("maven-config-skip", MAVEN_CONFIG, "-Denforcer.skip=true\n", ""),
-        configCase("maven-config-pom-path", MAVEN_CONFIG, "-Dcairn.pomPath=x\n", ""),
-        configCase("maven-config-jqwik", MAVEN_CONFIG, "-Djqwik.x=1\n", ""),
-        configCase("maven-config-file-redirect", MAVEN_CONFIG, "-fbuild.xml\n", ""),
-        configCase("maven-config-settings", MAVEN_CONFIG, "-ssettings.xml\n", ""),
-        configCase("jvm-config-skip", JVM_CONFIG, "", "-Denforcer.skip=true\n"),
-        configCase("jvm-config-jqwik", JVM_CONFIG, "", "-Djqwik.x=1\n"),
-        configCase("jvm-config-extra-line", JVM_CONFIG, "", "-Dfoo=bar\n"));
+        appendCase("maven-config-skip", MAVEN_CONFIG, MAVEN_CONFIG_PATH, "-Denforcer.skip=true\n"),
+        appendCase("maven-config-pom-path", MAVEN_CONFIG, MAVEN_CONFIG_PATH, "-Dcairn.pomPath=x\n"),
+        appendCase("maven-config-jqwik", MAVEN_CONFIG, MAVEN_CONFIG_PATH, "-Djqwik.x=1\n"),
+        appendCase("maven-config-file-redirect", MAVEN_CONFIG, MAVEN_CONFIG_PATH, "-fbuild.xml\n"),
+        appendCase("maven-config-settings", MAVEN_CONFIG, MAVEN_CONFIG_PATH, "-ssettings.xml\n"),
+        appendCase("mvnw-edited", WRAPPER_FILES, MVNW_PATH, "# extra\n"),
+        appendCase("wrapper-properties-edited", WRAPPER_FILES, WRAPPER_PATH, "# extra\n"),
+        appendCase("extensions-xml-present", EXTENSIONS, EXTENSIONS_PATH, "<extensions/>"),
+        appendCase("jvm-config-skip", JVM_CONFIG, JVM_CONFIG_PATH, "-Denforcer.skip=true\n"),
+        appendCase("jvm-config-jqwik", JVM_CONFIG, JVM_CONFIG_PATH, "-Djqwik.x=1\n"),
+        appendCase("jvm-config-extra-line", JVM_CONFIG, JVM_CONFIG_PATH, "-Dfoo=bar\n"));
   }
 
   private static Arguments pomCase(String name, String expected, UnaryOperator<String> pomEdit) {
-    return Arguments.argumentSet(name, new Case(expected, pomEdit, "", live -> live));
+    return fileCase(name, expected, "pom.xml", pomEdit);
   }
 
-  private static Arguments configCase(
-      String name, String expected, String mavenConfig, String jvmConfigAppended) {
-    return Arguments.argumentSet(
-        name,
-        new Case(
-            expected, UnaryOperator.identity(), mavenConfig, live -> live + jvmConfigAppended));
+  private static Arguments fileCase(
+      String name, String expected, String path, UnaryOperator<String> edit) {
+    return Arguments.argumentSet(name, new Case(expected, Map.of(path, edit)));
+  }
+
+  private static Arguments appendCase(String name, String expected, String path, String appended) {
+    return fileCase(name, expected, path, live -> live + appended);
   }
 
   private static UnaryOperator<String> both(
