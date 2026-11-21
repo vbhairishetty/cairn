@@ -32,6 +32,8 @@ Created each morning with `/plan-day` from the roadmap in `docs/designs/cairn.md
   `net.jqwik:jqwik` as a direct dependency, run `./mvnw validate` with an explicit command line
   and empty `MAVEN_OPTS`, and require it to fail with the ban message (`net.jqwik is banned`),
   not just any failure (T-009 review, director decision; N1).
+  The same job also runs the real repo's `./mvnw test` and fails if the output contains
+  "jqwik" anywhere other than the test class name `JqwikBanSecurityTest` (T-009 review R10, N4).
 - Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
   `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and
