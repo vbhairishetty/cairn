@@ -30,7 +30,8 @@ Created each morning with `/plan-day` from the roadmap in `docs/designs/cairn.md
 - T-004: the Dependabot config must ignore `net.jqwik:*` (ADR 0006).
 - T-004: add a behavioral CI check for the jqwik ban: copy the whole repo (pom and `.mvn/`), add
   `net.jqwik:jqwik` as a direct dependency, run `./mvnw validate` with an explicit command line
-  and empty `MAVEN_OPTS`, and require it to fail (T-009 review, director decision).
+  and empty `MAVEN_OPTS`, and require it to fail with the ban message (`net.jqwik is banned`),
+  not just any failure (T-009 review, director decision; N1).
 - Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
   `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and
