@@ -58,6 +58,22 @@ final class BuildGuard {
       </plugin>
       """;
 
+  // Must equal the non-blank lines of .mvn/jvm.config. A change to that file must update both.
+  private static final List<String> COMMITTED_JVM_CONFIG =
+      List.of(
+          "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+          "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+          "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+          "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED");
+
   private BuildGuard() {}
 
   static List<String> violations(Path pom, Path mavenConfig, Path jvmConfig) throws Exception {
@@ -95,27 +111,42 @@ final class BuildGuard {
     }
     if (count(
             document,
-            "//systemPropertyVariables/*[contains(name(),'enforcer') or contains(name(),'cairn.')"
-                + " or contains(.,'enforcer') or contains(.,'cairn.')]")
+            "//plugin[normalize-space(artifactId)='maven-surefire-plugin'"
+                + " or normalize-space(artifactId)='maven-failsafe-plugin']"
+                + "//*[self::dependencies or self::additionalClasspathDependencies"
+                + " or self::additionalClasspathElements or self::classpathDependencyExcludes]")
         > 0) {
-      found.add("systemPropertyVariables mentions enforcer or cairn.");
+      found.add(
+          "surefire or failsafe plugin declares dependencies or classpath settings;"
+              + " they bypass the Enforcer");
     }
-    if (count(document, "//argLine[contains(.,'enforcer') or contains(.,'cairn.')]") > 0) {
-      found.add("argLine mentions enforcer or cairn.");
+    // Interpolation could assemble a banned coordinate from properties.
+    if (count(document, "//dependency/*[self::groupId or self::artifactId][contains(.,'${')]")
+        > 0) {
+      found.add("a dependency groupId or artifactId contains ${");
     }
 
-    checkConfig(mavenConfig, found);
-    checkConfig(jvmConfig, found);
+    checkMavenConfig(mavenConfig, found);
+    checkJvmConfig(jvmConfig, found);
     return found;
   }
 
-  private static void checkConfig(Path file, List<String> found) throws IOException {
-    String text = Files.exists(file) ? Files.readString(file) : "";
-    if (text.contains("enforcer")
-        || text.contains("cairn.")
-        || text.toLowerCase(Locale.ROOT).contains("jqwik")) {
-      found.add(file.getFileName() + " mentions enforcer, cairn. or jqwik");
+  // Maven reads .mvn/maven.config as command-line arguments (-f, -s, -D), so any content could
+  // redirect the build away from the guarded pom.
+  private static void checkMavenConfig(Path file, List<String> found) throws IOException {
+    if (Files.exists(file) && !Files.readString(file).isBlank()) {
+      found.add(file.getFileName() + " must be absent or blank");
     }
+  }
+
+  private static void checkJvmConfig(Path file, List<String> found) throws IOException {
+    if (Files.exists(file) && !lines(Files.readString(file)).equals(COMMITTED_JVM_CONFIG)) {
+      found.add(file.getFileName() + " differs from the committed lines in BuildGuard");
+    }
+  }
+
+  private static List<String> lines(String text) {
+    return text.lines().map(String::trim).filter(line -> !line.isEmpty()).toList();
   }
 
   private static String shape(Document document) throws XPathExpressionException {

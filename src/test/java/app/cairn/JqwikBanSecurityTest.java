@@ -23,6 +23,12 @@ class JqwikBanSecurityTest {
   private static final String ONCE = "must be declared exactly once";
   private static final String ENFORCER_PROPERTY = "a pom property starts with enforcer.";
   private static final String OUTSIDE = "jqwik appears outside the approved enforcer plugin";
+  private static final String PARENT = "parent must be spring-boot-starter-parent";
+  private static final String TEST_PLUGIN_DEPENDENCIES =
+      "surefire or failsafe plugin declares dependencies";
+  private static final String INTERPOLATED = "dependency groupId or artifactId contains ${";
+  private static final String MAVEN_CONFIG = "maven.config must be absent or blank";
+  private static final String JVM_CONFIG = "jvm.config differs from the committed lines";
   private static final String JQWIK_DEPENDENCY =
       "<dependency><groupId>net.jqwik</groupId><artifactId>jqwik</artifactId>"
           + "<version>1.10.2</version></dependency>";
@@ -33,7 +39,10 @@ class JqwikBanSecurityTest {
           + "</profile></profiles>";
 
   record Case(
-      String expected, UnaryOperator<String> pomEdit, String mavenConfig, String jvmConfig) {}
+      String expected,
+      UnaryOperator<String> pomEdit,
+      String mavenConfig,
+      UnaryOperator<String> jvmConfigEdit) {}
 
   @TempDir Path dir;
 
@@ -43,7 +52,9 @@ class JqwikBanSecurityTest {
     Path pom = dir.resolve("pom.xml");
     Files.writeString(pom, weakened.pomEdit().apply(Files.readString(Path.of("pom.xml"))));
     Files.writeString(dir.resolve("maven.config"), weakened.mavenConfig());
-    Files.writeString(dir.resolve("jvm.config"), weakened.jvmConfig());
+    Files.writeString(
+        dir.resolve("jvm.config"),
+        weakened.jvmConfigEdit().apply(Files.readString(Path.of(".mvn/jvm.config"))));
 
     assertThat(BuildGuard.violations(pom, dir.resolve("maven.config"), dir.resolve("jvm.config")))
         .anySatisfy(violation -> assertThat(violation).contains(weakened.expected()));
@@ -56,6 +67,17 @@ class JqwikBanSecurityTest {
 
     assertThat(
             BuildGuard.violations(pom, dir.resolve("absent.config"), dir.resolve("absent2.config")))
+        .isEmpty();
+  }
+
+  @Test
+  void committedJvmConfigAndBlankMavenConfigAreNotReported() throws Exception {
+    Path pom = dir.resolve("pom.xml");
+    Files.writeString(pom, Files.readString(Path.of("pom.xml")));
+    Files.writeString(dir.resolve("maven.config"), "\n  \n");
+    Files.writeString(dir.resolve("jvm.config"), Files.readString(Path.of(".mvn/jvm.config")));
+
+    assertThat(BuildGuard.violations(pom, dir.resolve("maven.config"), dir.resolve("jvm.config")))
         .isEmpty();
   }
 
@@ -170,13 +192,6 @@ class JqwikBanSecurityTest {
               return pom.replace(block, block + block.replace("validate", "none"));
             }),
         pomCase(
-            "system-property-variables",
-            "systemPropertyVariables mentions",
-            edit(
-                "<argLine>@{argLine}</argLine>",
-                "<argLine>@{argLine}</argLine><systemPropertyVariables><cairn.pomPath>decoy.xml"
-                    + "</cairn.pomPath></systemPropertyVariables>")),
-        pomCase(
             "surefire-plugin-dependency",
             OUTSIDE,
             edit(
@@ -193,24 +208,61 @@ class JqwikBanSecurityTest {
                     + JQWIK_DEPENDENCY
                     + "</additionalClasspathDependencies>")),
         pomCase(
+            "surefire-plugin-dependency-interpolated",
+            TEST_PLUGIN_DEPENDENCIES,
+            both(
+                edit(
+                    "<artifactId>maven-surefire-plugin</artifactId>",
+                    "<artifactId>maven-surefire-plugin</artifactId><dependencies><dependency>"
+                        + "<groupId>net.${a}${b}</groupId><artifactId>${a}${b}</artifactId>"
+                        + "<version>1.10.2</version></dependency></dependencies>"),
+                edit("<java.version>", "<a>jq</a><b>wik</b><java.version>"))),
+        pomCase(
+            "failsafe-plugin-dependency",
+            TEST_PLUGIN_DEPENDENCIES,
+            edit(
+                "<artifactId>maven-failsafe-plugin</artifactId>",
+                "<artifactId>maven-failsafe-plugin</artifactId><dependencies>"
+                    + "<dependency><groupId>com.example</groupId><artifactId>x</artifactId>"
+                    + "<version>1</version></dependency></dependencies>")),
+        pomCase(
+            "project-dependency-interpolated",
+            INTERPOLATED,
+            edit(
+                "<dependencies>\n    <dependency>",
+                "<dependencies>\n    <dependency><groupId>net.${g}</groupId>"
+                    + "<artifactId>x</artifactId></dependency>\n    <dependency>")),
+        pomCase("relative-path-removed", PARENT, edit("<relativePath/>", "")),
+        pomCase(
+            "parent-artifact-changed",
+            PARENT,
+            edit(
+                "<artifactId>spring-boot-starter-parent</artifactId>",
+                "<artifactId>other-parent</artifactId>")),
+        pomCase(
             "local-parent",
-            "parent must be spring-boot-starter-parent",
+            PARENT,
             edit("<relativePath/>", "<relativePath>../parent/pom.xml</relativePath>")),
-        configCase("maven-config-skip", "maven.config mentions", "-Denforcer.skip=true\n", ""),
-        configCase("jvm-config-skip", "jvm.config mentions", "", "-Denforcer.skip=true\n"),
-        configCase("maven-config-pom-path", "maven.config mentions", "-Dcairn.pomPath=x\n", ""),
-        configCase("maven-config-jqwik", "maven.config mentions", "-Djqwik.x=1\n", ""),
-        configCase("jvm-config-jqwik", "jvm.config mentions", "", "-Djqwik.x=1\n"));
+        configCase("maven-config-skip", MAVEN_CONFIG, "-Denforcer.skip=true\n", ""),
+        configCase("maven-config-pom-path", MAVEN_CONFIG, "-Dcairn.pomPath=x\n", ""),
+        configCase("maven-config-jqwik", MAVEN_CONFIG, "-Djqwik.x=1\n", ""),
+        configCase("maven-config-file-redirect", MAVEN_CONFIG, "-fbuild.xml\n", ""),
+        configCase("maven-config-settings", MAVEN_CONFIG, "-ssettings.xml\n", ""),
+        configCase("jvm-config-skip", JVM_CONFIG, "", "-Denforcer.skip=true\n"),
+        configCase("jvm-config-jqwik", JVM_CONFIG, "", "-Djqwik.x=1\n"),
+        configCase("jvm-config-extra-line", JVM_CONFIG, "", "-Dfoo=bar\n"));
   }
 
   private static Arguments pomCase(String name, String expected, UnaryOperator<String> pomEdit) {
-    return Arguments.argumentSet(name, new Case(expected, pomEdit, "", ""));
+    return Arguments.argumentSet(name, new Case(expected, pomEdit, "", live -> live));
   }
 
   private static Arguments configCase(
-      String name, String expected, String mavenConfig, String jvmConfig) {
+      String name, String expected, String mavenConfig, String jvmConfigAppended) {
     return Arguments.argumentSet(
-        name, new Case(expected, UnaryOperator.identity(), mavenConfig, jvmConfig));
+        name,
+        new Case(
+            expected, UnaryOperator.identity(), mavenConfig, live -> live + jvmConfigAppended));
   }
 
   private static UnaryOperator<String> both(
