@@ -34,8 +34,8 @@ Created each morning with `/plan-day` from the roadmap in `docs/designs/cairn.md
   not just any failure (T-009 review, director decision; N1).
   The same job also runs the real repo's `./mvnw test` and fails if the output contains
   "jqwik" anywhere other than the test class name `JqwikBanSecurityTest` (T-009 review R10, N4).
-  This also closes the known guard gaps: an interpolated second Surefire block and Surefire
-  excludes that skip the guard tests (T-009 round 7 review N1, N2).
+  This also closes the known guard gaps: Surefire excludes that skip the guard tests, an
+  edited `mvnw.cmd`, and build extensions declared in the pom (T-009 review N2, D2, D3).
 - Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
   `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and

@@ -52,11 +52,13 @@ supply-chain control.
    BuildGuard is a closed allowlist. The Enforcer plugin is declared exactly once anywhere in
    the pom, under `build/plugins`, and its subtree matches one approved shape. There are no
    `enforcer.*` properties, no "jqwik" outside that shape, no dependencies or classpath
-   settings on Surefire or Failsafe, no `${` in dependency coordinates, the standard Spring Boot
-   parent has an empty `relativePath`, `.mvn/maven.config` is absent or blank, and
-   `.mvn/jvm.config` equals the committed lines.
-   `JqwikBanSecurityTest` applies one anchored edit per known bypass to the live pom and
-   requires the matching violation. Test first: the new cases fail on the earlier guard.
+   settings on Surefire or Failsafe, no `${` in any groupId or artifactId, the standard Spring
+   Boot parent has an empty `relativePath`, `.mvn/maven.config` is absent or blank,
+   `.mvn/jvm.config` equals the committed lines, `.mvn/extensions.xml` is absent, and `mvnw`
+   and `maven-wrapper.properties` match pinned SHA-256 values. Comments and CDATA are ignored
+   when parsing, so split names are caught.
+   `JqwikBanSecurityTest` copies the live build files to a temporary directory, applies one
+   anchored edit per known bypass, and requires the matching violation. Test first: the new cases fail on the earlier guard.
    *(Changed in review: the first design, a single `buildBansJqwik` XPath check, was bypassed
    repeatedly. On 2026-11-21 the director approved the allowlist redesign after the security
    review failed it.)*
@@ -80,6 +82,7 @@ supply-chain control.
 | modify | `src/test/java/app/cairn/BuildConfigurationTest.java` | live-files guard test |
 | create | `src/test/java/app/cairn/BuildGuard.java` | allowlist check of the pom and `.mvn` files |
 | create | `src/test/java/app/cairn/JqwikBanSecurityTest.java` | one generated case per known bypass (TM-14) |
+| create | `.gitattributes` | pin line endings of the files BuildGuard hashes |
 
 ## Public API
 
