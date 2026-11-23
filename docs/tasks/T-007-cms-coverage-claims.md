@@ -55,7 +55,7 @@ its validation are a later `rules` card.
    `service` and `quantity`.)*
 3. Given each CMS category, When it is mapped to a design service row (in `category_mapping`) (`primary_care`,
    `specialist`, `diagnostic_test`, ... from section 5), Then the mapping is recorded with a
-   reason, and lines that do not map cleanly are listed as `unmapped` for the director.
+   reason. Categories that do not map cleanly are marked `needs_director` until the director decides.
 4. Given the YAML, When the line amounts of each scenario are summed by hand, Then they equal
    the CMS total example cost for that scenario. The check is recorded in the research note.
 5. Given the claims are **not** published in citable form, When the research ends, Then no

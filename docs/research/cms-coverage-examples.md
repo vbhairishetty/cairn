@@ -90,37 +90,74 @@ nearest $100.
   - "Copayments" holds the copays that do not apply to the deductible
   - "Coinsurance" is the total less the deductible, copayments and limits or exclusions
 - **Rounding:** amounts of $100 or more round to the nearest hundred; amounts under $100 round
-  to the nearest ten.
+  to the nearest ten (group instructions). The guides' assumption sheets say "greater than $100"
+  and "less than $100", leaving exactly $100 unstated; Cairn follows the instructions. CMS states
+  no tie rule. Its example of a $1,750 deductible shown as $1,800 before the cap implies half
+  up, which Cairn uses.
 - **Caps:**
   - A rounded deductible is capped at the actual self-only deductible.
   - If rounding makes the cost sharing exceed the self-only out-of-pocket limit, the limit is
     used instead. That amount is then added to the limits or exclusions to give the total the
     patient pays.
+  - A service-specific deductible that makes the shown deductible larger than the overall
+    deductible is marked with an asterisk, not capped. v1 does not model separate deductibles,
+    so this cannot arise in Cairn's own results; an SBC that shows one is a `mismatch` with that
+    cause.
 
 Design section 6 now uses these rules (director decision, 2026-11-23). Reconciliation applies
 the same rounding and caps to the engine's results and compares every printed field.
+
+## Rounding edges that allow a `near_match`
+
+A field that differs from the printed value by $50 or less passes only for one of these causes.
+The cause is shown with the result.
+
+1. **Sub-cent amounts:** Cairn rounds each claim line to cents before use. For the diabetes
+   scenario this moves the total from 5,601.1016 to 5,601.13. A plan's own calculator may keep
+   full precision, so a field just across a $5 or $50 rounding boundary can land one step away.
+2. **Exactly $100:** the guides and the instructions disagree on whether exactly $100 rounds to
+   the hundred or the ten.
+3. **Tie rule:** CMS states no tie rule. A plan that rounds a tie down (for example $250 to
+   $200) differs from Cairn's half up by one rounding step.
+
+Any other cause, including a plan classifying a service differently from Cairn's mapping, is a
+`mismatch`.
 
 ## Category mapping
 
 CMS says plans "may classify an item or service under another category". So Cairn keeps its
 own mapping in the YAML (`category_mapping`).
-- **13 categories** map cleanly to an SBC service row, each with a reason.
-- **Five were decided by the director on 2026-11-23:**
+- **15 categories** map to an SBC service row, each with a reason. Three of them were decided
+  by the director on 2026-11-23:
   - **Professional Services: Inpatient** (delivery anesthesia) -> `childbirth_professional`.
-  - **Professional Services: Obstetric Care (Bundled)** -> `childbirth_professional`. The global
-    fee is billed at delivery, and its follow-up visits are $0 lines.
-  - **Prescription Drugs: Insulin** -> `generic_rx`, following CMS's assumption that "all
-    medications are covered as generic equivalents if available"; generic insulin glargine
-    exists.
+    The template's example labels it "Specialist visit (anesthesia)".
+  - **Prescription Drugs: Insulin** -> `generic_rx`, following CMS's assumption on the guide's
+    Label and Assumptions sheet: "All medications are covered as generic equivalents if
+    available". Correction: the first write-up also said "generic insulin glargine exists".
+    That was unsourced; unbranded insulin glargine is a biosimilar, not an FDA generic.
   - **Medical Supplies** -> `durable_medical_equipment`. The template's diabetes example lists
     "Durable medical equipment (glucose meter)".
-  - **Over-the-counter Drugs** -> `excluded` (not covered; the full amount counts under
-    "Limits or exclusions").
+- **One is excluded:** Over-the-counter Drugs (not covered; the full amount counts under
+  "Limits or exclusions"; director decision 2026-11-23).
+- **Two need the director again:**
+  - **Professional Services: Obstetric Care (Bundled).** Correction: the first write-up said
+    the global fee is billed at delivery. In the guide it is dated at the first prenatal visit
+    (2016-04-01). Delivery is 2016-12-09. The template lists this care as "Specialist office
+    visits (prenatal care)". Because claims run in date order, this $2,609.93 line meets most
+    deductibles before any lab test.
+  - **Other Facility Services** (fiberglass cast supplies, $43.22, billed at the specialist
+    cast visit). No surgery took place, so "Outpatient surgery: facility fee" is not a clean
+    fit. Plans may treat it as part of the specialist visit, as supplies, or as a facility fee.
 
 Plans may classify these differently. A real SBC that does is reported as a `near_match` or
 `mismatch` with its cause, never hidden.
 
 ## Caveats
+
+- **Effective date:** `effective_from: 2021-01-01` is the template edition's start date. The
+  guide amounts were revised in 2023: the XLSX files were last modified 2023-07-30, and the
+  2019 calculator packet shows different maternity amounts. So nothing shows these exact amounts
+  applied from 2021-01-01. Treat them as the current CMS values as of the 2023 revision.
 
 - **Expired OMB control number:** every CMS document shows OMB control number 0938-1146 with
   expiration 05/31/2026. No renewed version was on the CMS page on 2026-11-23. The 2021

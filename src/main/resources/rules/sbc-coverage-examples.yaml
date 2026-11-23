@@ -27,9 +27,9 @@ category_mapping:
     status: mapped
     reason: "SBC row 'Emergency room care' (physician fee)"
   - cms_category: "Other Facility Services"
-    service: outpatient_facility
-    status: mapped
-    reason: "cast supplies billed by the outpatient hospital; SBC row 'Outpatient surgery: facility fee'"
+    service: null
+    status: needs_director
+    reason: "fiberglass cast supplies billed at the specialist cast visit on the outpatient hospital claim; no surgery took place, so 'Outpatient surgery: facility fee' is not a clean fit; plans may treat it as part of the specialist visit, as supplies, or as a facility fee"
   - cms_category: "Durable Medical Equipment"
     service: durable_medical_equipment
     status: mapped
@@ -69,15 +69,15 @@ category_mapping:
   - cms_category: "Professional Services: Inpatient"
     service: childbirth_professional
     status: mapped
-    reason: "delivery anesthesia is a professional service at the delivery; SBC row 'Childbirth/delivery professional services' (director decision, 2026-11-23)"
+    reason: "delivery anesthesia is a professional service at the delivery; SBC row 'Childbirth/delivery professional services'; the template example labels it 'Specialist visit (anesthesia)' (director decision, 2026-11-23)"
   - cms_category: "Professional Services: Obstetric Care (Bundled)"
-    service: childbirth_professional
-    status: mapped
-    reason: "the global obstetric fee is billed as one professional charge at delivery; its follow-up visits are $0 lines (director decision, 2026-11-23)"
+    service: null
+    status: needs_director
+    reason: "global obstetric fee of $2,609.93 dated at the first prenatal visit (2016-04-01), not at delivery; its follow-up visits are $0 lines; the template example lists this care as 'Specialist office visits (prenatal care)'; candidate rows: 'prenatal_postnatal_office', 'specialist' or 'childbirth_professional' (re-decision needed: the first decision relied on a wrong statement that it was billed at delivery)"
   - cms_category: "Prescription Drugs: Insulin"
     service: generic_rx
     status: mapped
-    reason: "CMS assumption: all medications are covered as generic equivalents if available; generic insulin glargine exists (director decision, 2026-11-23)"
+    reason: "CMS assumption on the guide's Label and Assumptions sheet: 'All medications are covered as generic equivalents if available' (director decision, 2026-11-23)"
   - cms_category: "Medical Supplies"
     service: durable_medical_equipment
     status: mapped
@@ -1012,13 +1012,13 @@ scenarios:
         date_of_service: 2016-06-02
         cms_category: "Professional Services: Emergency Department"
         provider_type: "Outpatient Hospital"
-        description: "Emergency room physician service"
+        description: "Emergency room professional service (exam, imaging or treatment)"
         allowed_amount: "49.72"
       - line: 5
         date_of_service: 2016-06-02
         cms_category: "Professional Services: Emergency Department"
         provider_type: "Outpatient Hospital"
-        description: "Emergency room physician service"
+        description: "Emergency room professional service (exam, imaging or treatment)"
         allowed_amount: "335.16"
       - line: 6
         date_of_service: 2016-06-02

@@ -263,7 +263,7 @@ A review item is resolved through the `validate` API (`PATCH /api/v1/review-item
 | --- | --- | --- |
 | `price_assumption` | `service`, `typical_price numeric`, `source text`, `user_edited boolean` | Typical prices before insurance, labeled as estimates; seeded from `rules.price_seed`, editable by the user |
 | `estimate` | `id`, `plan_id`, `scenario` (low, expected, high, worst), `input_hash char(64)`, `total numeric`, `breakdown jsonb`, `computed_at` | Unique (`plan_id`, `scenario`, `input_hash`). `input_hash` is the SHA-256 of the plan's rules and premiums, the usage, the price assumptions and the tier, so any change to an input produces a new row and a stale result is never shown |
-| `reconciliation` | `id`, `plan_id`, `scenario`, `engine_total`, `printed_total`, `difference`, `status` (match, mismatch, unmappable), `computed_at` | One row per coverage example |
+| `reconciliation` | `id`, `plan_id`, `scenario`, `field` (deductibles, copayments, coinsurance, limits_or_exclusions, total), `engine_amount`, `printed_amount`, `difference`, `status` (match, near_match, mismatch, unmappable), `cause text null`, `computed_at` | One row per printed field per coverage example (section 6) |
 
 **`rules` schema** (loaded from `src/main/resources/rules/*.yaml` at startup, read-only)
 
@@ -325,7 +325,7 @@ counted    = 0                                    # counts toward the out-of-poc
 not_counted = 0                                   # "not covered": never capped
 
 for each event, in order:     # scenarios: the Service enum order of section 5, then count
-                               # reconciliation: the CMS claim line order
+                               # reconciliation: date of service; same-date lines keep CMS guide order
     price = event.price          # the price assumption, or the CMS claim amount in reconciliation
     rule  = plan.rule(event.service, network)
     if service is preventive and network is in_network or preferred: share = 0      # step 1, wins over a missing rule
@@ -378,13 +378,15 @@ Only the deductible part of a payment reduces the deductible; copays and coinsur
 
 **Known simplifications in v1, shown in the UI:** embedded family deductibles (the family aggregate is used), visit caps and other limitation notes (shown but not applied), drug costs beyond the four SBC drug rows, copays that count toward the deductible on some plans, and network-specific prices. Typical service prices are labeled estimates the user can edit.
 
-**Coverage-example reconciliation.** SBC coverage examples are computed from standard claims that CMS publishes for each scenario: one line per item or service, with its date, category and allowed amount (research in `docs/research/cms-coverage-examples.md`). Cairn stores those claims as rule data (`coverage_example_claim`), maps each CMS category to an SBC service row (`coverage_example_category`), and rounds each allowed amount to cents (half up) when it loads them. For each plan and scenario, the engine runs the claims in date-of-service order, with the plan's in-network rules and coverage tier "self", and leaves out premiums and the HSA contribution. It splits the patient's share the way CMS does:
-- copays that count toward the deductible are reported as deductible;
-- "Copayments" holds the copays that do not;
-- "Coinsurance" is the rest;
-- "Limits or exclusions" is the not-covered amount.
+**Coverage-example reconciliation.** SBC coverage examples are computed from standard claims that CMS publishes for each scenario: one line per item or service, with its date, category and allowed amount (research in `docs/research/cms-coverage-examples.md`). Cairn stores those claims as rule data (`coverage_example_claim`), maps each CMS category to an SBC service row (`coverage_example_category`), and rounds each allowed amount to cents (half up) when it loads them. For each plan and scenario, the engine runs the claims in date-of-service order, with the plan's in-network rules and coverage tier "self", and leaves out premiums and the HSA contribution. The `Estimate` breakdown records each line's share in the SBC's four printed fields: "Deductibles" (what the patient paid toward the deductible), "Copayments", "Coinsurance" and "Limits or exclusions" (not-covered amounts). CMS reports copays that count toward the deductible under "Deductibles". v1 does not model such copays (a known simplification above), so a plan whose copays count toward its deductible cannot match. It is escalated as a `mismatch` with that cause, never adjusted.
 
-It then applies CMS's display rules to each amount. Amounts of $100 or more round to the nearest $100, and amounts under $100 to the nearest $10. The rounded deductible is capped at the plan's self-only deductible, and the rounded cost sharing is capped at the self-only out-of-pocket limit before the exclusions are added. Each resulting field is compared with the SBC's printed value. When every field is equal, the scenario is a `match`. When a field differs by $50 or less, it is a `near_match`: shown side by side with its cause, and it counts as passing only when the cause is a documented CMS rounding edge. A larger difference is a `mismatch` (director decision, Nov 23). A claim that cannot be mapped to a service row is `unmappable`. A mismatch or unmappable result flags the plan in the UI with the numbers side by side. It is never hidden, and price assumptions are never tuned to make it match. A claim whose service has no parsed rule in the plan makes that scenario `unmappable`. *Assumption to confirm on Day 1 (task T-007): the CMS claim data is published and can be cited.* The criterion stays strict. Work stops and escalates to the director if the CMS data cannot be found (T-007), or if a real SBC misses the $50 tolerance because of a documented simplification (section 6). The criterion is never loosened without the director's decision.
+Then CMS's display rules apply:
+- Each field rounds half up: amounts of $100 or more to the nearest $100, amounts under $100 to the nearest $10. CMS's own example, a $1,750 deductible shown as $1,800 before the cap, implies half up.
+- The rounded deductible is capped at the plan's self-only deductible.
+- If the rounded deductibles, copayments and coinsurance together exceed the self-only out-of-pocket limit, the limit is used for that sum. CMS gives no rule for adjusting the separate fields then, so only the sum is compared.
+- The total the patient pays is that capped sum plus the rounded limits or exclusions.
+
+Each field and the total are compared with the SBC's printed values, one `reconciliation` row per field. When every field is equal, the scenario is a `match`. When a field differs by $50 or less, it is a `near_match`. It passes only when its cause is one of the rounding edges listed in `docs/research/cms-coverage-examples.md`, and it is always shown with that cause. A larger difference is a `mismatch` (director decision, Nov 23). A claim that cannot be mapped to a service row is `unmappable`. A mismatch or unmappable result flags the plan in the UI with the numbers side by side. It is never hidden, and price assumptions are never tuned to make it match. A claim whose service has no parsed rule in the plan makes that scenario `unmappable`. *Assumption to confirm on Day 1 (task T-007): the CMS claim data is published and can be cited.* The criterion stays strict. Work stops and escalates to the director if the CMS data cannot be found (T-007), or if a real SBC fails reconciliation because of a documented simplification (section 6). The criterion is never loosened without the director's decision.
 
 **How we prove it is correct**
 
@@ -392,7 +394,7 @@ It then applies CMS's display rules to each amount. Amounts of $100 or more roun
 | --- | --- | --- |
 | Unit tests per step | Each of the 6 steps above behaves exactly as written, including an event that spans the deductible | JUnit 5 + AssertJ |
 | Property-based tests | Invariants hold for thousands of random plans: in-network cost (excluding "not covered") never exceeds premiums plus the maximum, more usage never costs less, in-network preventive care is always $0, results are deterministic, scenario order low ≤ expected ≤ high | JUnit `@ParameterizedTest` with a fixed-seed generator (ADR 0006) |
-| Coverage-example reconciliation | Running the SBC's own example scenarios reproduces the totals the insurer printed, within $50 per scenario | Golden-file tests on real SBCs |
+| Coverage-example reconciliation | Running the SBC's own example scenarios reproduces every amount the insurer printed, after CMS rounding and caps (section 6) | Golden-file tests on real SBCs |
 | Hand-calculated cases | Three plans worked out on paper by you, committed as expected results | JUnit 5 |
 
 The reconciliation check is the strongest interview point: the insurer's own document is the answer key, so accuracy is measured, not claimed.
@@ -669,7 +671,7 @@ Findings are rated High, Medium or Low as defined in `.claude/rules/security.md`
 | 2 Fri Nov 20 | Upload and jobs | Upload endpoint with size, page and type limits, file storage, SHA-256 dedupe, `job` queue and worker with `SKIP LOCKED`, retries and leases, status endpoint, JSON logs with scrubbing, local-network defenses (bind, Host check, compose ports) | 01:42 to 03:28 | Same file twice creates one document; a failing job retries then shows its error; oversized and fake PDFs are rejected by tests |
 | 3 Sat Nov 21 | Extract | SBC section locator, Tabula table extraction, page stitching, `raw_cell`, golden tests for 3 insurers | 08:45 to 09:23 (testing chapter, watched out of order) | The services table of all test SBCs lands in `raw_cell`; golden tests pass |
 | 4 Sun Nov 22 | Normalize and engine | Senior implementer: cost-sharing parser, limits, validators, review items and the review-items API, engine steps 1 to 6, property-based tests; independent reviewer works the 3 hand-calculated plans | Optional: 03:28 to 04:43 | Every test SBC becomes typed rules; 40+ unit tests and 5 properties pass |
-| 5 Mon Nov 23 | Compare, benefits and diff | Scenarios, coverage-example reconciliation, comparisons API, premium entry, price assumptions with seed data, profile, manual dental and vision entry, free-benefits checklist from rule data, reminders as `.ics`, plan-version diff. Stretch: email reminders to Mailpit | Optional: 04:43 to 06:02 | Reconciliation within $50 per example for every test SBC; the `.ics` file parses and imports; the diff of two plan years is correct |
+| 5 Mon Nov 23 | Compare, benefits and diff | Scenarios, coverage-example reconciliation, comparisons API, premium entry, price assumptions with seed data, profile, manual dental and vision entry, free-benefits checklist from rule data, reminders as `.ics`, plan-version diff. Stretch: email reminders to Mailpit | Optional: 04:43 to 06:02 | Reconciliation matches every printed field (after CMS rounding and caps) for every test SBC; the `.ics` file parses and imports; the diff of two plan years is correct |
 | 6 Tue Nov 24 | OPT, UI and first users | Senior implementer: rules YAML and timeline gap checker. Implementers: dashboard pages (including the review screen and settings) with CSRF and escaping tests, picocli CLI, metrics, Dockerfile with Trivy scan. Classmates try a build in the evening. Stretch: Ask Cairn with a 10-question evaluation including a prompt-injection case, red-flag scanner | Optional: 06:02 to 08:45 | The test OPT timeline shows its gap days and the 2027 rule; the full demo works in the browser; XSS and CSRF tests pass; 3 classmates have a build |
 | 7 Wed Nov 25 | Ship | Fixes from classmates' feedback, Rule Watcher (basic, allowlisted URLs), end-to-end CI test, Docker image to GHCR on tag, README with demo GIF, ADRs, privacy notes, threat model and disclaimer, finished `docs/ai-workflow.md`, v0.1.0 release; you rehearse the 2-minute pitch | Rest | A fresh clone runs with `docker compose up`; no open High findings; classmates' feedback recorded |
 
@@ -690,7 +692,7 @@ The biggest risk is extraction quality across insurers on Day 3; the plan protec
 | Risk | Likelihood | Fallback |
 | --- | --- | --- |
 | An insurer's SBC layout defeats the table extractor | High | Per-insurer extraction settings; a review screen where the user confirms values; slip triggers in section 12 |
-| Reconciliation does not match within $50 | Medium | Investigate per scenario; document known simplifications; never hide the mismatch |
+| Reconciliation does not match the printed fields | Medium | Investigate per scenario; document known simplifications; never hide the mismatch |
 | The CMS coverage-example claim data cannot be found or cited | Medium | Found out on Day 1 in the golden JSON task; the director decides how to proceed |
 | Rules go out of date | Medium | `verified_on` dates, a 90-day review flag, and sources shown next to every rule |
 | Memory pressure on 8 GB | Medium | Colima VM capped at 4 GB; Ollama off by default |
