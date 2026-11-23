@@ -46,8 +46,10 @@ says so.
    - **(b)** It runs `./mvnw -B test` on the real checkout. That run must pass, its output and
      test reports must not contain "jqwik" (any case) except inside the class name
      `JqwikBanSecurityTest`, and the guard tests must have run by name. The local Maven
-     repository must contain no `net/jqwik` directory before or after the run, so any route
-     that puts jqwik on a classpath fails, whatever the pom looks like.
+     repository must contain no `net/jqwik` directory before or after the run. That catches
+     every accidental route (a dependency, a Dependabot bump, a plugin or test-runner
+     dependency). Known residual gaps need deliberate, visible multi-file edits and are listed
+     in TM-14.
    *(Changed during review: `git archive` dropped export-ignored files, and the jqwik-in-cache
    check replaces pom-shape checks that kept being bypassed. Orchestrator, Nov 23.)*
 3. Given `.github/workflows/codeql.yml`, When a pull request to `main` is opened, `main` is

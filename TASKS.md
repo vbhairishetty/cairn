@@ -43,6 +43,10 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
 - Engine card: CMS claims list one visit as several same-day lines (for example the fracture ER
   visit: ambulance, facility, x-ray, treatment). Define whether a copay applies per visit or
   per line before writing the reconciliation tests (T-007).
+- Follow-up for the jqwik ban (T-004 review N4 to N6, Low): in `jqwik-ban-check.sh`, require
+  `.mvn/maven.config` absent or blank, `.mvn/extensions.xml` absent, no committed `*.jar` or
+  `*.zip`, and no `.jqwik-database` anywhere in the tree; in BuildGuard, reject Surefire and
+  Failsafe `workingDirectory`. Take it when convenient; each gap needs a deliberate edit.
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
