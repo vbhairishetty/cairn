@@ -1,5 +1,5 @@
 # Keep these files byte-identical on every checkout: BuildGuard pins their content.
 mvnw text eol=lf
-mvnw.cmd text eol=crlf
+mvnw.cmd -text
 .mvn/jvm.config text eol=lf
 .mvn/wrapper/maven-wrapper.properties text eol=lf
