@@ -114,8 +114,8 @@ differs from Cairn's by exactly $10, one rounding step. Fields of $100 or more r
 nearest $100, so any difference there is a `mismatch`, escalated to the director with its cause
 and never absorbed (director rule: reconciliation stays strict). The derived rows
 (`cost_sharing_sum`, `total`) inherit a `near_match` only when their signed difference is
-exactly the sum of their `near_match` fields' signed differences (design section 6; pending the
-director's confirmation).
+exactly the sum of their `near_match` fields' signed differences (design section 6;
+confirmed by the director, 2026-11-23).
 
 The $10 difference passes only for one of these causes, and the cause is shown with the result:
 
