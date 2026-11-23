@@ -113,8 +113,9 @@ A `near_match` exists only for a printed field whose printed value is under $100
 differs from Cairn's by exactly $10, one rounding step. Fields of $100 or more round to the
 nearest $100, so any difference there is a `mismatch`, escalated to the director with its cause
 and never absorbed (director rule: reconciliation stays strict). The derived rows
-(`cost_sharing_sum`, `total`) inherit a `near_match` only when their difference is exactly the
-sum of their `near_match` fields' differences (design section 6).
+(`cost_sharing_sum`, `total`) inherit a `near_match` only when their signed difference is
+exactly the sum of their `near_match` fields' signed differences (design section 6; pending the
+director's confirmation).
 
 The $10 difference passes only for one of these causes, and the cause is shown with the result:
 
