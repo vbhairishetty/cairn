@@ -4,6 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Wait a week after a release, so a hijacked release can be caught before it is proposed.
+    cooldown:
+      default-days: 7
     ignore:
       # jqwik is banned, see docs/adr/0006-remove-jqwik.md
       - dependency-name: "net.jqwik:*"
@@ -11,3 +14,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7

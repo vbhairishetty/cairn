@@ -10,7 +10,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Pull requests share one group per ref; each push to main gets its own group, so no
+  # merged commit loses its CI result.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -47,5 +49,8 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+          # Without this, setup-java exports MAVEN_ARGS=-ntp, and the script refuses any
+          # MAVEN_ARGS in CI so nothing can move the local repository it checks.
+          show-download-progress: true
       - name: Check the jqwik ban end to end
         run: scripts/ci/jqwik-ban-check.sh
