@@ -47,7 +47,9 @@ worked in the report, and do not commit machine-specific paths.
 3. Given the app's configuration, When it starts, Then the datasource URL, user and password
    come from the environment variables `CAIRN_DB_URL` (default
    `jdbc:postgresql://127.0.0.1:5432/cairn`), `CAIRN_DB_USER` and `CAIRN_DB_PASSWORD`. No
-   password value is committed (see the open question for how Compose gets one).
+   password value is committed. Compose requires `CAIRN_DB_PASSWORD`: without it,
+   `docker compose up` stops with a clear message (`${CAIRN_DB_PASSWORD:?...}`). `.env.example`
+   shows the variable with a placeholder (director decision, option (a)).
 4. Given an empty database, When the app or a test starts, Then Flyway creates the
    `documents` schema and applies
    `db/migration/documents/V202611191400__documents_create_document.sql`. It creates
@@ -81,6 +83,7 @@ worked in the report, and do not commit machine-specific paths.
 
 | Action | Path | Purpose |
 | --- | --- | --- |
+| modify | `docs/designs/cairn.md` | "Done means" fresh-clone wording (director-approved) |
 | create | `docker-compose.yml` | `postgres` service, pinned `pgvector/pgvector:<exact>-pg16` tag, `127.0.0.1` port, health check, named volume, password from env |
 | create | `.env.example` | Variable names with placeholder values, no real secret |
 | modify | `pom.xml` | `spring-boot-starter-jdbc`, `org.postgresql:postgresql`, `flyway-core`, `flyway-database-postgresql`; test: `spring-boot-testcontainers`, `org.testcontainers:postgresql`, `org.testcontainers:junit-jupiter` (versions from the Boot BOM) |
@@ -141,20 +144,19 @@ All gates in `/verify-gates` must pass. `./mvnw verify` now needs Docker running
 
 ## Open questions
 
-- **How Compose gets the database password (for the director).** Options:
-  - **(a) Required variable.** Compose fails with a clear message unless `CAIRN_DB_PASSWORD`
-    is set, for example after `cp .env.example .env` and editing it. This is safest, but a
-    fresh clone needs one setup step before `docker compose up`, which slightly changes the
-    "Done means" wording.
-  - **(b) Fixed local password.** A documented, non-secret password such as `cairn-local` is
-    used for the loopback-only database. A fresh clone runs with no setup, at the cost of a
-    known password on the local port.
-
-  Recommendation: (a), with the README step added on Day 7. T-003 does not start until the
-  director answers; the orchestrator then updates criterion 3 and this section.
+- none. The director chose option (a) on Nov 20: Compose requires `CAIRN_DB_PASSWORD`, and
+  there is no committed default. The director also approved the matching "Done means" wording
+  in the design. This PR updates it to: "A fresh clone starts with `cp .env.example .env`,
+  setting `CAIRN_DB_PASSWORD`, and then `docker compose up`".
 
 ## Notes
 
 - Pin the image to an exact tag (for example `pgvector/pgvector:0.8.x-pg16`, the newest
   available), not `latest`.
 - Do not set `spring.flyway.create-schemas=false`. Flyway creates the listed schemas.
+- Spring Boot 4.1 split auto-configuration into modules. Use `spring-boot-starter-flyway` for
+  Flyway, plus the Boot 4.1 Testcontainers support artifacts. Check the names against the Boot
+  4.1.3 BOM rather than Boot 3 tutorials.
+- JaCoCo already merges unit and integration coverage (T-001). `DocumentSchemaIT` coverage
+  counts.
+- Probes and builds that download artifacts must not leave test artifacts in `~/.m2`.
