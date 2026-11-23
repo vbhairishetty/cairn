@@ -67,25 +67,25 @@ category_mapping:
     status: mapped
     reason: "the stay is a vaginal delivery; SBC row 'Childbirth/delivery facility services'"
   - cms_category: "Professional Services: Inpatient"
-    service: null
-    status: needs_director
-    reason: "delivery anesthesia: SBC row 'Childbirth/delivery professional services', but the template's example lists it as 'Specialist visit (anesthesia)'"
+    service: childbirth_professional
+    status: mapped
+    reason: "delivery anesthesia is a professional service at the delivery; SBC row 'Childbirth/delivery professional services' (director decision, 2026-11-23)"
   - cms_category: "Professional Services: Obstetric Care (Bundled)"
-    service: null
-    status: needs_director
-    reason: "global obstetric fee covering prenatal visits, delivery and postnatal care; fits both 'Office visits' (prenatal/postnatal) and 'Childbirth/delivery professional services'"
+    service: childbirth_professional
+    status: mapped
+    reason: "the global obstetric fee is billed as one professional charge at delivery; its follow-up visits are $0 lines (director decision, 2026-11-23)"
   - cms_category: "Prescription Drugs: Insulin"
-    service: null
-    status: needs_director
-    reason: "insulin glargine; generic, preferred brand or specialty depends on each plan's formulary"
+    service: generic_rx
+    status: mapped
+    reason: "CMS assumption: all medications are covered as generic equivalents if available; generic insulin glargine exists (director decision, 2026-11-23)"
   - cms_category: "Medical Supplies"
-    service: null
-    status: needs_director
-    reason: "syringes, lancets, test strips and the glucose meter; the template example calls the meter 'Durable medical equipment', but plans often cover supplies under the pharmacy benefit"
+    service: durable_medical_equipment
+    status: mapped
+    reason: "the SBC template's diabetes example lists 'Durable medical equipment (glucose meter)' (director decision, 2026-11-23)"
   - cms_category: "Over-the-counter Drugs"
     service: null
-    status: needs_director
-    reason: "no SBC service row; usually not covered, so it likely counts under 'Limits or exclusions'"
+    status: excluded
+    reason: "no SBC service row and normally not covered; the full amount counts under 'Limits or exclusions' (director decision, 2026-11-23)"
 scenarios:
   - scenario: having_baby
     title: "Peg is Having a Baby"

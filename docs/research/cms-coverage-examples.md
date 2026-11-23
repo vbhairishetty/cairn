@@ -105,23 +105,20 @@ the same rounding and caps to the engine's results and compares every printed fi
 CMS says plans "may classify an item or service under another category". So Cairn keeps its
 own mapping in the YAML (`category_mapping`).
 - **13 categories** map cleanly to an SBC service row, each with a reason.
-- **Five need a decision from the director:**
-  - **Professional Services: Inpatient (delivery anesthesia).** The SBC row is
-    "Childbirth/delivery professional services", but the template's example lists it as
-    "Specialist visit (anesthesia)".
-  - **Professional Services: Obstetric Care (Bundled).** The global obstetric fee covers
-    prenatal visits, delivery and postnatal care, so it fits both "Office visits" and
-    "Childbirth/delivery professional services".
-  - **Prescription Drugs: Insulin.** Whether it is generic, preferred brand or specialty
-    depends on the plan's formulary.
-  - **Medical Supplies** (syringes, lancets, test strips, glucose meter). The template's example
-    calls the meter "Durable medical equipment", but plans often cover supplies under the
-    pharmacy benefit.
-  - **Over-the-counter Drugs.** There is no SBC row; they are usually not covered, so they
-    likely count under "Limits or exclusions".
+- **Five were decided by the director on 2026-11-23:**
+  - **Professional Services: Inpatient** (delivery anesthesia) -> `childbirth_professional`.
+  - **Professional Services: Obstetric Care (Bundled)** -> `childbirth_professional`. The global
+    fee is billed at delivery, and its follow-up visits are $0 lines.
+  - **Prescription Drugs: Insulin** -> `generic_rx`, following CMS's assumption that "all
+    medications are covered as generic equivalents if available"; generic insulin glargine
+    exists.
+  - **Medical Supplies** -> `durable_medical_equipment`. The template's diabetes example lists
+    "Durable medical equipment (glucose meter)".
+  - **Over-the-counter Drugs** -> `excluded` (not covered; the full amount counts under
+    "Limits or exclusions").
 
-Until these are decided, reconciliation reports the affected scenarios as `unmappable` instead
-of guessing.
+Plans may classify these differently. A real SBC that does is reported as a `near_match` or
+`mismatch` with its cause, never hidden.
 
 ## Caveats
 

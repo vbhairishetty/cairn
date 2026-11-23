@@ -273,7 +273,7 @@ A review item is resolved through the `validate` API (`PATCH /api/v1/review-item
 | `preventive_service` | `code`, `name`, `age_bands text[]`, `depends_on_sex boolean`, `frequency` (once, yearly, every_2_years, every_3_years, every_5_years, every_10_years), `source_url`, `effective_from`, `verified_on` | USPSTF A and B recommendations, the source of the free-benefits checklist |
 | `age_band` | `code`, `min_age`, `max_age` | Bands chosen at the USPSTF age thresholds, kept as data |
 | `coverage_example_claim` | `scenario`, `line`, `date_of_service`, `cms_category`, `description`, `allowed_amount numeric`, `source_url`, `effective_from` | The standard claims behind each SBC coverage example, from the CMS calculation guides (section 6). Data in `src/main/resources/rules/sbc-coverage-examples.yaml` (T-007). No billing codes are stored: CPT descriptors are AMA text |
-| `coverage_example_category` | `cms_category`, `service null`, `status` (mapped, needs_director), `reason` | Maps each CMS claim category to a Cairn service row. A category with no confirmed row makes its scenario `unmappable` until the director decides |
+| `coverage_example_category` | `cms_category`, `service null`, `status` (mapped, excluded, needs_director), `reason` | Maps each CMS claim category to a Cairn service row. `excluded` means not covered: the full amount counts under "Limits or exclusions". A `needs_director` category makes its scenario `unmappable` until the director decides |
 | `price_seed` | `service`, `typical_price numeric`, `source_url`, `effective_from`, `verified_on` | Seed values for `engine.price_assumption`. Each price cites a public source chosen in the price-assumption task card, and the director approves the source |
 
 **`profile` schema**
