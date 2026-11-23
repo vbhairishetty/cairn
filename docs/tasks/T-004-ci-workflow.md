@@ -37,12 +37,19 @@ says so.
    gate fails.
 2. Given the same workflow, When it runs, Then a job named `jqwik-ban` runs
    `scripts/ci/jqwik-ban-check.sh`, and the job fails unless both checks pass:
-   - **(a)** It makes a `git archive` copy of the commit in a temporary directory, adds a
+   - **(a)** It makes a `git worktree` copy of the commit in a temporary directory, adds a
      direct `net.jqwik:jqwik:1.10.2` test dependency to the copy's `pom.xml`, and runs
-     `./mvnw -B validate` with `MAVEN_OPTS` empty and no extra `-D` flags. That run must
-     **fail**, and its output must contain `net.jqwik is banned`.
-   - **(b)** It runs `./mvnw -B test` on the real checkout. That run must pass, and its output
-     must not contain "jqwik" (any case) except inside the class name `JqwikBanSecurityTest`.
+     `./mvnw -B validate` with `MAVEN_OPTS` empty. The only `-D` flags allowed are the two that
+     give the copy its own local Maven repository (`maven.repo.local` and
+     `maven.repo.local.tail`), so jqwik never enters the shared cache. No flag may skip
+     anything. That run must **fail** with the Enforcer's ban failure.
+   - **(b)** It runs `./mvnw -B test` on the real checkout. That run must pass, its output and
+     test reports must not contain "jqwik" (any case) except inside the class name
+     `JqwikBanSecurityTest`, and the guard tests must have run by name. The local Maven
+     repository must contain no `net/jqwik` directory before or after the run, so any route
+     that puts jqwik on a classpath fails, whatever the pom looks like.
+   *(Changed during review: `git archive` dropped export-ignored files, and the jqwik-in-cache
+   check replaces pom-shape checks that kept being bypassed. Orchestrator, Nov 23.)*
 3. Given `.github/workflows/codeql.yml`, When a pull request to `main` is opened, `main` is
    pushed, or the weekly schedule fires, Then CodeQL analyses `java-kotlin` with a manual
    build step, `./mvnw -B clean compile`, and uploads results.
