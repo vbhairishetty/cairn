@@ -2,7 +2,7 @@
 
 Trail markers for your health coverage.
 
-**Status:** Cairn is under active development. v0.1.0 is planned for Nov 25, 2026. Today only
+**Status:** Cairn is under active development. v0.1.0 is planned for Dec 2, 2026. Today only
 the build skeleton exists. Nothing in the features below works yet.
 
 ## What Cairn will do

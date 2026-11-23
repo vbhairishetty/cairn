@@ -15,7 +15,7 @@ decides and both are updated.
 
 ## 1. Overview
 
-Cairn is a free, open-source, self-hosted tool that helps employees choose the right health plan, use the benefits they already pay for, and avoid coverage gaps, with extra guidance for F-1 students on OPT and STEM OPT. Version 1 ships in 7 days (Thu Nov 19 to Wed Nov 25, 2026), during open enrollment season.
+Cairn is a free, open-source, self-hosted tool that helps employees choose the right health plan, use the benefits they already pay for, and avoid coverage gaps, with extra guidance for F-1 students on OPT and STEM OPT. Version 1 was planned for 7 days (Thu Nov 19 to Wed Nov 25, 2026), during open enrollment season. On Nov 23 the director moved v0.1.0 to Wed Dec 2, 2026 with the same scope (see section 12).
 
 **The name.** A cairn is a stack of stones hikers build to mark the trail where the path is hard to see. Cairn marks the trail through a health system that is hard to read, especially for someone new to the US. Tagline: *Trail markers for your health coverage.* No health insurance or benefits product using the name was found; the word is used by unrelated companies in other fields.
 
@@ -639,6 +639,8 @@ Findings are rated High, Medium or Low as defined in `.claude/rules/security.md`
 **Interview line:** *"Every change passed automated style, architecture and security checks, plus an AI security review that I validated by hand. Here's a prompt-injection risk I found in my own RAG feature and the test that guards it."*
 
 ## 12. 7-day roadmap
+
+**Revised Nov 23, 2026 (director decision):** the build ran about four days behind this table, so v0.1.0 moves to Wed Dec 2, 2026 with the same scope. The day table below is the original plan and keeps its order; each day's actual tasks come from `/plan-day` and `TASKS.md`. The slip triggers and cut list still apply, counted against the new date.
 
 *This section is the build plan for the director.* The day is about 10 hours: 6.5 on Cairn (standup, approvals and escalations), 2 on a separate Spring Boot course the director is following (the "Tutorial" column gives timestamps into that course; it is not part of Cairn), and 1.5 for the walkthrough and algorithm practice. The pipeline is built in order (upload, extract, normalize, compute, show), so something works end to end each day. Per-task order and dependencies live in `TASKS.md` and the task cards; this table is the day-level plan.
 
