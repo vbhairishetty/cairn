@@ -15,7 +15,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config; jqwik behavioral check | sde1-implementer | READY | T-001, T-009 |
 | T-005 | `common.Money` and `SourceRef` value types with property tests | sde2-implementer | READY | T-002 |
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | READY (needs public SBC PDFs) | - |
-| T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | IN_PROGRESS | - |
+| T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | IN_REVIEW | - |
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
 
@@ -40,6 +40,17 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
   This also closes the known guard gaps: Surefire excludes that skip the guard tests, an
   edited `mvnw.cmd`, build extensions declared in the pom, and a system-scope dependency
   pointing at a cached jqwik jar (T-009 review N2, D2, D3; security S1 round 8).
+- Engine card: CMS claims list one visit as several same-day lines (for example the fracture ER
+  visit: ambulance, facility, x-ray, treatment). Define whether a copay applies per visit or
+  per line before writing the reconciliation tests (T-007).
+- Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
+  records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
+  fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
+  every claim category must be in `category_mapping`; `service` is null only when `status` is
+  `excluded`; each scenario's line sum must equal `total_allowed_published`; each scenario must
+  carry `source_sha256`, `source_revision`, `effective_from` and `verified_on`. Add
+  `RuleDataLoaderSecurityTest` with one failing fixture per rule. The Rule Watcher compares
+  `source_sha256` with the live file.
 - Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
   `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and

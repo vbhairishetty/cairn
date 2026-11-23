@@ -1,7 +1,7 @@
 ---
 id: T-007
 title: Find, cite and record the CMS coverage-example claims
-status: IN_PROGRESS
+status: IN_REVIEW
 complexity: medium
 risk: high
 agent: orchestrator
@@ -44,13 +44,18 @@ its validation are a later `rules` card.
    is written, Then it has one entry per scenario. Each entry has:
    - `scenario` (`having_baby`, `managing_diabetes`, `simple_fracture`)
    - `source_url`, `effective_from`, `verified_on`
-   - the total example cost
-   - claim lines, each with `line`, a description, `service`, `quantity` and `allowed_amount`
+   - the printed total example cost and the published line total
+   - claim lines, each with `line`, `date_of_service`, `cms_category`, `provider_type`, a
+     description and `allowed_amount`
 
-   Every amount is copied exactly from the CMS source, never estimated.
-3. Given each claim line, When it is mapped to a design service row (`primary_care`,
+   Every amount is copied exactly from the CMS source, never estimated. No billing or
+   diagnosis codes are stored, and CPT lines get a plain label instead of the AMA descriptor
+   (director decision, 2026-11-23). The guides have no quantity column; repeat fills are
+   separate lines. *(Changed while doing the task: the first draft asked for a per-line
+   `service` and `quantity`.)*
+3. Given each CMS category, When it is mapped to a design service row (in `category_mapping`) (`primary_care`,
    `specialist`, `diagnostic_test`, ... from section 5), Then the mapping is recorded with a
-   reason, and lines that do not map cleanly are listed as `unmapped` for the director.
+   reason. Categories that do not map cleanly are marked `needs_director` until the director decides.
 4. Given the YAML, When the line amounts of each scenario are summed by hand, Then they equal
    the CMS total example cost for that scenario. The check is recorded in the research note.
 5. Given the claims are **not** published in citable form, When the research ends, Then no

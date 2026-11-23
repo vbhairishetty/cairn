@@ -1,0 +1,1112 @@
+# SBC coverage-example claims, from the CMS calculation guides (T-007).
+# Source: CMS CCIIO 'Summary of Benefits and Coverage' resources, SBC template for plan or
+# policy years beginning on or after January 1, 2021 (guides revised 2023-06-07).
+# https://www.cms.gov/cciio/Resources/Forms-Reports-and-Other-Resources/index
+# Allowed amounts are copied exactly as published, including sub-cent values. The rules
+# loader rounds each line to cents (half up) before use; see docs/research/cms-coverage-examples.md.
+# Billing and diagnosis codes are not copied. CPT short descriptors are AMA text, so CPT
+# lines carry a plain label written for Cairn (director decision, 2026-11-23).
+# The guides show OMB control number 0938-1146 with expiration 05/31/2026; no renewed
+# version was published as of 2026-11-23. Re-verify on every rules review.
+version: 1
+template_edition: "2021"
+effective_from: 2021-01-01
+verified_on: 2026-11-23
+source_page: https://www.cms.gov/cciio/Resources/Forms-Reports-and-Other-Resources/index
+category_mapping:
+  - cms_category: "Ambulance"
+    service: emergency_transport
+    status: mapped
+    reason: "SBC row 'Emergency medical transportation'"
+  - cms_category: "Emergency Department: Facility"
+    service: er_facility
+    status: mapped
+    reason: "SBC row 'Emergency room care' (facility fee)"
+  - cms_category: "Professional Services: Emergency Department"
+    service: er_physician
+    status: mapped
+    reason: "SBC row 'Emergency room care' (physician fee)"
+  - cms_category: "Other Facility Services"
+    service: specialist
+    status: mapped
+    reason: "fiberglass cast supplies billed at the specialist cast visit; treated as part of that visit (director decision, 2026-11-23)"
+  - cms_category: "Durable Medical Equipment"
+    service: durable_medical_equipment
+    status: mapped
+    reason: "SBC row 'Durable medical equipment'"
+  - cms_category: "Professional Services: Specialist"
+    service: specialist
+    status: mapped
+    reason: "SBC row 'Specialist visit'"
+  - cms_category: "Professional Services: Primary Care"
+    service: primary_care
+    status: mapped
+    reason: "SBC row 'Primary care visit'; includes the diabetes educator and dietitian lines"
+  - cms_category: "Professional Services: Physical Therapy"
+    service: rehabilitation
+    status: mapped
+    reason: "SBC row 'Rehabilitation services'"
+  - cms_category: "Diagnostic Services: Radiology"
+    service: diagnostic_test
+    status: mapped
+    reason: "SBC row 'Diagnostic test (x-ray, blood work)'; these are x-rays and ultrasounds, not CT/PET/MRI"
+  - cms_category: "Diagnostic Services: Laboratory"
+    service: diagnostic_test
+    status: mapped
+    reason: "SBC row 'Diagnostic test (x-ray, blood work)'"
+  - cms_category: "Prescription Drugs: Generic"
+    service: generic_rx
+    status: mapped
+    reason: "SBC row 'Generic drugs'"
+  - cms_category: "Preventive Services & Vaccines"
+    service: preventive
+    status: mapped
+    reason: "SBC row 'Preventive care/screening/immunization'"
+  - cms_category: "Inpatient Hospital Care (Facility)"
+    service: childbirth_facility
+    status: mapped
+    reason: "the stay is a vaginal delivery; SBC row 'Childbirth/delivery facility services'"
+  - cms_category: "Professional Services: Inpatient"
+    service: childbirth_professional
+    status: mapped
+    reason: "delivery anesthesia is a professional service at the delivery; SBC row 'Childbirth/delivery professional services'; the template example labels it 'Specialist visit (anesthesia)' (director decision, 2026-11-23)"
+  - cms_category: "Professional Services: Obstetric Care (Bundled)"
+    service: prenatal_postnatal_office
+    status: mapped
+    reason: "global obstetric fee dated at the first prenatal visit (2016-04-01); the template lists this care as 'Specialist office visits (prenatal care)'; SBC row 'If you are pregnant: Office visits' (director decision, 2026-11-23)"
+  - cms_category: "Prescription Drugs: Insulin"
+    service: generic_rx
+    status: mapped
+    reason: "CMS assumption on the guide's Label and Assumptions sheet: 'All medications are covered as generic equivalents if available' (director decision, 2026-11-23)"
+  - cms_category: "Medical Supplies"
+    service: durable_medical_equipment
+    status: mapped
+    reason: "the SBC template's diabetes example lists 'Durable medical equipment (glucose meter)' (director decision, 2026-11-23)"
+  - cms_category: "Over-the-counter Drugs"
+    service: null
+    status: excluded
+    reason: "no SBC service row and normally not covered; the full amount counts under 'Limits or exclusions' (director decision, 2026-11-23)"
+scenarios:
+  - scenario: having_baby
+    title: "Peg is Having a Baby"
+    source_url: https://www.cms.gov/files/document/having-baby-guide-060723-xlsx.xlsx
+    source_sha256: 14861670f5e09d5690b2b94e1aee16577b76f7646559c231b359dffc01aa9d22
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
+    source_pdf_url: https://www.cms.gov/files/document/having-baby-guide-060723-pdf.pdf
+    total_example_cost_printed: "12700"
+    total_allowed_published: "12686.85"
+    claims:
+      - line: 1
+        date_of_service: 2016-01-07
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Prenatal Vitamins (OTC - Bottle of 100) [1 pill daily; 30 pills/month]"
+        allowed_amount: "11.48"
+      - line: 2
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "56.04"
+      - line: 3
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "119.67"
+      - line: 4
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "36.94"
+      - line: 5
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "17.37"
+      - line: 6
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "5.30"
+      - line: 7
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "9.86"
+      - line: 8
+        date_of_service: 2016-04-01
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Obstetric care (bundled global fee)"
+        allowed_amount: "2609.93"
+      - line: 9
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "13.12"
+      - line: 10
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "8.67"
+      - line: 11
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "44.48"
+      - line: 12
+        date_of_service: 2016-04-01
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "43.82"
+      - line: 13
+        date_of_service: 2016-04-07
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 14
+        date_of_service: 2016-04-07
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Prenatal Vitamins (OTC - Bottle of 100) [1 pill daily; 30 pills/month]"
+        allowed_amount: "11.48"
+      - line: 15
+        date_of_service: 2016-05-27
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 16
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "23.21"
+      - line: 17
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "28.67"
+      - line: 18
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "24.94"
+      - line: 19
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "21.67"
+      - line: 20
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "595.43"
+      - line: 21
+        date_of_service: 2016-06-24
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "5.30"
+      - line: 22
+        date_of_service: 2016-06-24
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 23
+        date_of_service: 2016-07-06
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Prenatal Vitamins (OTC - Bottle of 100) [1 pill daily; 30 pills/month]"
+        allowed_amount: "11.48"
+      - line: 24
+        date_of_service: 2016-07-22
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 25
+        date_of_service: 2016-07-22
+        cms_category: "Diagnostic Services: Radiology"
+        provider_type: "Radiology"
+        description: "Imaging study (x-ray or ultrasound)"
+        allowed_amount: "209.73"
+      - line: 26
+        date_of_service: 2016-08-19
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 27
+        date_of_service: 2016-09-16
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "8.21"
+      - line: 28
+        date_of_service: 2016-09-16
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "13.99"
+      - line: 29
+        date_of_service: 2016-09-16
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "10.03"
+      - line: 30
+        date_of_service: 2016-09-16
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "5.30"
+      - line: 31
+        date_of_service: 2016-09-16
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 32
+        date_of_service: 2016-09-16
+        cms_category: "Diagnostic Services: Radiology"
+        provider_type: "Radiology"
+        description: "Imaging study (x-ray or ultrasound)"
+        allowed_amount: "133.68"
+      - line: 33
+        date_of_service: 2016-09-30
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 34
+        date_of_service: 2016-10-04
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Prenatal Vitamins (OTC - Bottle of 100) [1 pill daily; 30 pills/month]"
+        allowed_amount: "11.48"
+      - line: 35
+        date_of_service: 2016-10-14
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 36
+        date_of_service: 2016-10-28
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "OBGYN"
+        description: "Laboratory test"
+        allowed_amount: "61.22"
+      - line: 37
+        date_of_service: 2016-10-28
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 38
+        date_of_service: 2016-10-28
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "OBGYN"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "28.56"
+      - line: 39
+        date_of_service: 2016-10-28
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "OBGYN"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "20.20"
+      - line: 40
+        date_of_service: 2016-11-11
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 41
+        date_of_service: 2016-11-18
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 42
+        date_of_service: 2016-11-25
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 43
+        date_of_service: 2016-12-02
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 44
+        date_of_service: 2016-12-09
+        cms_category: "Professional Services: Inpatient"
+        provider_type: "Anesthesiology"
+        description: "Delivery anesthesia"
+        allowed_amount: "1399.34"
+      - line: 45
+        date_of_service: 2016-12-09
+        cms_category: "Inpatient Hospital Care (Facility)"
+        provider_type: "Inpatient Facility"
+        description: "Vaginal delivery w/o complicating diagnoses"
+        allowed_amount: "7060.58"
+      - line: 46
+        date_of_service: 2016-12-09
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+      - line: 47
+        date_of_service: 2016-12-11
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Polyethylene Glycol 3350 [1 dose / 17 GM daily]"
+        allowed_amount: "15.10"
+      - line: 48
+        date_of_service: 2016-12-11
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Ibuprofen 800mg (Rx) [1 pill Q8H PRN; 30 pills]"
+        allowed_amount: "3.77"
+      - line: 49
+        date_of_service: 2016-12-11
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Oxycodone/APAP 5mg/325mg (Rx) [1 pill Q6H PRN; 15 pills]"
+        allowed_amount: "6.80"
+      - line: 50
+        date_of_service: 2016-12-23
+        cms_category: "Professional Services: Obstetric Care (Bundled)"
+        provider_type: "OBGYN"
+        description: "Prenatal or postnatal obstetric visit (cost included in the bundled obstetric care line)"
+        allowed_amount: "0.00"
+  - scenario: managing_diabetes
+    title: "Managing Joe's Type 2 Diabetes"
+    source_url: https://www.cms.gov/files/document/managing-type-2-diabetes-guide-060723-xlsx.xlsx
+    source_sha256: f483386a60feb231eaa02f51db963a82d768ae938d39b9e9a7adec7660112976
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
+    source_pdf_url: https://www.cms.gov/files/document/managing-type-2-diabetes-guide-060723-pdf.pdf
+    total_example_cost_printed: "5600"
+    total_allowed_published: "5601.1016345616"
+    claims:
+      - line: 1
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 2
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Delica Lancets (100 per box)  [usage = 60 lancets per month]"
+        allowed_amount: "8.7301796569"
+      - line: 3
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Delica Lancing Device"
+        allowed_amount: "14.327450492"
+      - line: 4
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra 2 Blood Glucose Meter Kit"
+        allowed_amount: "14.701756355"
+      - line: 5
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Blue Test Strips (Rx - box of 100) [usage = 2 strips/day; 60 per month]"
+        allowed_amount: "109.60716731"
+      - line: 6
+        date_of_service: 2016-01-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Control Solution (2 vials/box)"
+        allowed_amount: "6.6269607403"
+      - line: 7
+        date_of_service: 2016-01-03
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Aspirin 81mg (OTC - bottle 100) [usage = 1 QD; #30 pills per month]"
+        allowed_amount: "4.4666831829"
+      - line: 8
+        date_of_service: 2016-01-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Glucagon Emergency Kit"
+        allowed_amount: "241.05377504"
+      - line: 9
+        date_of_service: 2016-01-03
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 10
+        date_of_service: 2016-01-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [#60 pilles/month]"
+        allowed_amount: "3.2078197954"
+      - line: 11
+        date_of_service: 2016-01-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 12
+        date_of_service: 2016-01-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Atorvastatin 40 MG tablet 90 CT [ #30 pills/month]"
+        allowed_amount: "9.6624245068"
+      - line: 13
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "9.5260836071"
+      - line: 14
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "29.625143204"
+      - line: 15
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "16.984505185"
+      - line: 16
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "23.39659488"
+      - line: 17
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "13.096190886"
+      - line: 18
+        date_of_service: 2016-01-03
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "6.4317291141"
+      - line: 19
+        date_of_service: 2016-01-03
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Primary"
+        description: "Primary care or care-team visit"
+        allowed_amount: "121.6999385"
+      - line: 20
+        date_of_service: 2016-01-04
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Diabetes Educator"
+        description: "Diabetes outpatient self-management training services, individual, per 30 minutes"
+        allowed_amount: "77.824568388"
+      - line: 21
+        date_of_service: 2016-01-04
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Dietician"
+        description: "Primary care or care-team visit"
+        allowed_amount: "36.828165684"
+      - line: 22
+        date_of_service: 2016-01-06
+        cms_category: "Professional Services: Specialist"
+        provider_type: "Podiatry"
+        description: "Specialist service"
+        allowed_amount: "182.18785898"
+      - line: 23
+        date_of_service: 2016-01-07
+        cms_category: "Professional Services: Specialist"
+        provider_type: "Ophthalmology"
+        description: "Specialist service"
+        allowed_amount: "118.55178267"
+      - line: 24
+        date_of_service: 2016-01-31
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 25
+        date_of_service: 2016-02-02
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 26
+        date_of_service: 2016-02-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 27
+        date_of_service: 2016-02-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 28
+        date_of_service: 2016-02-28
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 29
+        date_of_service: 2016-03-04
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 30
+        date_of_service: 2016-03-04
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 31
+        date_of_service: 2016-03-04
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 32
+        date_of_service: 2016-03-28
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Aspirin 81mg (OTC - bottle 100) [usage = 1 QD; #30 pills per month]"
+        allowed_amount: "4.4666831829"
+      - line: 33
+        date_of_service: 2016-03-28
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 34
+        date_of_service: 2016-03-28
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Primary"
+        description: "Primary care or care-team visit"
+        allowed_amount: "121.6999385"
+      - line: 35
+        date_of_service: 2016-04-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 36
+        date_of_service: 2016-04-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 37
+        date_of_service: 2016-04-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 38
+        date_of_service: 2016-04-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Atorvastatin 40 MG tablet 90 CT [ #30 pills/month]"
+        allowed_amount: "9.6624245068"
+      - line: 39
+        date_of_service: 2016-04-12
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Delica Lancets (100 per box)  [usage = 60 lancets per month]"
+        allowed_amount: "8.7301796569"
+      - line: 40
+        date_of_service: 2016-04-12
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Blue Test Strips (Rx - box of 100) [usage = 2 strips/day; 60 per month]"
+        allowed_amount: "109.60716731"
+      - line: 41
+        date_of_service: 2016-04-25
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 42
+        date_of_service: 2016-05-03
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 43
+        date_of_service: 2016-05-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 44
+        date_of_service: 2016-05-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 45
+        date_of_service: 2016-05-23
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 46
+        date_of_service: 2016-06-02
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 47
+        date_of_service: 2016-06-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 48
+        date_of_service: 2016-06-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 49
+        date_of_service: 2016-06-20
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Aspirin 81mg (OTC - bottle 100) [usage = 1 QD; #30 pills per month]"
+        allowed_amount: "4.4666831829"
+      - line: 50
+        date_of_service: 2016-06-20
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 51
+        date_of_service: 2016-06-27
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "16.984505185"
+      - line: 52
+        date_of_service: 2016-06-27
+        cms_category: "Diagnostic Services: Laboratory"
+        provider_type: "Primary"
+        description: "Laboratory test"
+        allowed_amount: "6.4317291141"
+      - line: 53
+        date_of_service: 2016-06-27
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Primary"
+        description: "Primary care or care-team visit"
+        allowed_amount: "121.6999385"
+      - line: 54
+        date_of_service: 2016-06-28
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Diabetes Educator"
+        description: "Diabetes outpatient self-management training services, individual, per 30 minutes"
+        allowed_amount: "77.824568388"
+      - line: 55
+        date_of_service: 2016-06-28
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Dietician"
+        description: "Primary care or care-team visit"
+        allowed_amount: "36.828165684"
+      - line: 56
+        date_of_service: 2016-07-02
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 57
+        date_of_service: 2016-07-02
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Control Solution (2 vials/box)"
+        allowed_amount: "6.6269607403"
+      - line: 58
+        date_of_service: 2016-07-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 59
+        date_of_service: 2016-07-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 60
+        date_of_service: 2016-07-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Atorvastatin 40 MG tablet 90 CT [ #30 pills/month]"
+        allowed_amount: "9.6624245068"
+      - line: 61
+        date_of_service: 2016-07-18
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 62
+        date_of_service: 2016-07-21
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Blue Test Strips (Rx - box of 100) [usage = 2 strips/day; 60 per month]"
+        allowed_amount: "109.60716731"
+      - line: 63
+        date_of_service: 2016-07-21
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Delica Lancets (100 per box)  [usage = 60 lancets per month]"
+        allowed_amount: "8.7301796569"
+      - line: 64
+        date_of_service: 2016-08-01
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 65
+        date_of_service: 2016-08-01
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 66
+        date_of_service: 2016-08-01
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 67
+        date_of_service: 2016-08-15
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 68
+        date_of_service: 2016-08-31
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 69
+        date_of_service: 2016-08-31
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 70
+        date_of_service: 2016-08-31
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 71
+        date_of_service: 2016-09-12
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Aspirin 81mg (OTC - bottle 100) [usage = 1 QD; #30 pills per month]"
+        allowed_amount: "4.4666831829"
+      - line: 72
+        date_of_service: 2016-09-12
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 73
+        date_of_service: 2016-09-26
+        cms_category: "Professional Services: Primary Care"
+        provider_type: "Primary"
+        description: "Primary care or care-team visit"
+        allowed_amount: "121.6999385"
+      - line: 74
+        date_of_service: 2016-09-30
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 75
+        date_of_service: 2016-09-30
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 76
+        date_of_service: 2016-09-30
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 77
+        date_of_service: 2016-10-03
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "Primary"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "15.884978439"
+      - line: 78
+        date_of_service: 2016-10-03
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "Primary"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "28.307330389"
+      - line: 79
+        date_of_service: 2016-10-03
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "Primary"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "93.736034601"
+      - line: 80
+        date_of_service: 2016-10-03
+        cms_category: "Preventive Services & Vaccines"
+        provider_type: "Primary"
+        description: "Vaccine or vaccine administration"
+        allowed_amount: "21.01994136"
+      - line: 81
+        date_of_service: 2016-10-03
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Atorvastatin 40 MG tablet 90 CT [ #30 pills/month]"
+        allowed_amount: "9.6624245068"
+      - line: 82
+        date_of_service: 2016-10-10
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 83
+        date_of_service: 2016-10-29
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Delica Lancets (100 per box)  [usage = 60 lancets per month]"
+        allowed_amount: "8.7301796569"
+      - line: 84
+        date_of_service: 2016-10-29
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Blue Test Strips (Rx - box of 100) [usage = 2 strips/day; 60 per month]"
+        allowed_amount: "109.60716731"
+      - line: 85
+        date_of_service: 2016-10-30
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 86
+        date_of_service: 2016-10-30
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 87
+        date_of_service: 2016-10-30
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 88
+        date_of_service: 2016-11-07
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 89
+        date_of_service: 2016-11-29
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 90
+        date_of_service: 2016-11-29
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 91
+        date_of_service: 2016-11-29
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+      - line: 92
+        date_of_service: 2016-12-05
+        cms_category: "Over-the-counter Drugs"
+        provider_type: "Pharmacy Retail"
+        description: "Aspirin 81mg (OTC - bottle 100) [usage = 1 QD; #30 pills per month]"
+        allowed_amount: "4.4666831829"
+      - line: 93
+        date_of_service: 2016-12-05
+        cms_category: "Prescription Drugs: Insulin"
+        provider_type: "Pharmacy Retail"
+        description: "Insulin glargine 100 unit/ml injectable solution (Rx - 10ml vial)  [20 units QD; expires 28 days after first use]"
+        allowed_amount: "240.37132461"
+      - line: 94
+        date_of_service: 2016-12-29
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "BD Ultrafine Insulin Syringes / 30G/ 0.5cc  [usage = 30 syringes per month]"
+        allowed_amount: "20.619405634"
+      - line: 95
+        date_of_service: 2016-12-29
+        cms_category: "Medical Supplies"
+        provider_type: "Pharmacy Retail"
+        description: "OneTouch Ultra Control Solution (2 vials/box)"
+        allowed_amount: "6.6269607403"
+      - line: 96
+        date_of_service: 2016-12-29
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Metformin Hydrochloride 500 MG TABLET [ #60 pills/month]"
+        allowed_amount: "3.2078197954"
+      - line: 97
+        date_of_service: 2016-12-29
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Lisinopril 20mg (Rx) [1 QD; #30 pills/month]"
+        allowed_amount: "3.3811144903"
+  - scenario: simple_fracture
+    title: "Mia's Simple Fracture"
+    source_url: https://www.cms.gov/files/document/simple-fracture-guide-060723-xlsx.xlsx
+    source_sha256: 81fedef1021ec8095052a3d0db6dd565b6b36b365091974408822e6c88cc421e
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
+    source_pdf_url: https://www.cms.gov/files/document/simple-fracture-guide-060723-pdf.pdf
+    total_example_cost_printed: "2800"
+    total_allowed_published: "2800.17"
+    claims:
+      - line: 1
+        date_of_service: 2016-06-02
+        cms_category: "Ambulance"
+        provider_type: "Ambulance (land)"
+        description: "Ground mileage, per statute mile"
+        allowed_amount: "161.71"
+      - line: 2
+        date_of_service: 2016-06-02
+        cms_category: "Ambulance"
+        provider_type: "Ambulance (land)"
+        description: "Ambulance service, basic life support, emergency transport (bls-emergency)"
+        allowed_amount: "782.16"
+      - line: 3
+        date_of_service: 2016-06-02
+        cms_category: "Emergency Department: Facility"
+        provider_type: "Outpatient Hospital"
+        description: "Emergency room visit (facility)"
+        allowed_amount: "357.31"
+      - line: 4
+        date_of_service: 2016-06-02
+        cms_category: "Professional Services: Emergency Department"
+        provider_type: "Outpatient Hospital"
+        description: "Emergency room professional service (exam, imaging or treatment)"
+        allowed_amount: "49.72"
+      - line: 5
+        date_of_service: 2016-06-02
+        cms_category: "Professional Services: Emergency Department"
+        provider_type: "Outpatient Hospital"
+        description: "Emergency room professional service (exam, imaging or treatment)"
+        allowed_amount: "335.16"
+      - line: 6
+        date_of_service: 2016-06-02
+        cms_category: "Durable Medical Equipment"
+        provider_type: "Outpatient Hospital"
+        description: "Walking boot, non-pneumatic, with or without joints, with or without interface material, prefabricated, off-the-shelf"
+        allowed_amount: "211.56"
+      - line: 7
+        date_of_service: 2016-06-02
+        cms_category: "Durable Medical Equipment"
+        provider_type: "Pharmacy Retail"
+        description: "Crutches, underarm, other than wood, adjustable or fixed, pair, with pads, tips, and handgrips"
+        allowed_amount: "35.97"
+      - line: 8
+        date_of_service: 2016-06-02
+        cms_category: "Prescription Drugs: Generic"
+        provider_type: "Pharmacy Retail"
+        description: "Week supply of Acetaminophen 300 MG / Codeine Phosphate 30 MG Oral Tablet"
+        allowed_amount: "5.24"
+      - line: 9
+        date_of_service: 2016-06-09
+        cms_category: "Professional Services: Specialist"
+        provider_type: "Outpatient Hospital"
+        description: "Specialist service"
+        allowed_amount: "127.51"
+      - line: 10
+        date_of_service: 2016-06-09
+        cms_category: "Diagnostic Services: Radiology"
+        provider_type: "Outpatient Hospital"
+        description: "Imaging study (x-ray or ultrasound)"
+        allowed_amount: "49.72"
+      - line: 11
+        date_of_service: 2016-06-09
+        cms_category: "Professional Services: Specialist"
+        provider_type: "Outpatient Hospital"
+        description: "Specialist service"
+        allowed_amount: "132.03"
+      - line: 12
+        date_of_service: 2016-06-09
+        cms_category: "Other Facility Services"
+        provider_type: "Outpatient Hospital"
+        description: "Cast supplies, short leg cast, adult (11 years +), fiberglass"
+        allowed_amount: "43.22"
+      - line: 13
+        date_of_service: 2016-07-14
+        cms_category: "Diagnostic Services: Radiology"
+        provider_type: "Primary"
+        description: "Imaging study (x-ray or ultrasound)"
+        allowed_amount: "63.18"
+      - line: 14
+        date_of_service: 2016-07-14
+        cms_category: "Professional Services: Specialist"
+        provider_type: "Primary"
+        description: "Specialist service"
+        allowed_amount: "81.66"
+      - line: 15
+        date_of_service: 2016-08-04
+        cms_category: "Professional Services: Physical Therapy"
+        provider_type: "Physical Therapy"
+        description: "Physical therapy session"
+        allowed_amount: "116.43"
+      - line: 16
+        date_of_service: 2016-08-11
+        cms_category: "Professional Services: Physical Therapy"
+        provider_type: "Physical Therapy"
+        description: "Physical therapy session"
+        allowed_amount: "82.53"
+      - line: 17
+        date_of_service: 2016-08-11
+        cms_category: "Professional Services: Physical Therapy"
+        provider_type: "Physical Therapy"
+        description: "Physical therapy session"
+        allowed_amount: "82.53"
+      - line: 18
+        date_of_service: 2016-08-18
+        cms_category: "Professional Services: Physical Therapy"
+        provider_type: "Physical Therapy"
+        description: "Physical therapy session"
+        allowed_amount: "82.53"
