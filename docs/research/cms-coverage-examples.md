@@ -127,27 +127,29 @@ Any other cause, including a plan classifying a service differently from Cairn's
 
 CMS says plans "may classify an item or service under another category". So Cairn keeps its
 own mapping in the YAML (`category_mapping`).
-- **15 categories** map to an SBC service row, each with a reason. Three of them were decided
-  by the director on 2026-11-23:
+- **17 categories** map to an SBC service row, each with a reason. Five were decided by the
+  director on 2026-11-23:
   - **Professional Services: Inpatient** (delivery anesthesia) -> `childbirth_professional`.
     The template's example labels it "Specialist visit (anesthesia)".
+  - **Professional Services: Obstetric Care (Bundled)** -> `prenatal_postnatal_office` (the SBC
+    row "If you are pregnant: Office visits"). The global fee is dated at the first prenatal
+    visit (2016-04-01), and the template lists this care as "Specialist office visits (prenatal
+    care)". Correction: the first write-up said the fee is billed at delivery (2016-12-09). The
+    director first chose `childbirth_professional` on that wrong premise, then re-decided with
+    the correct date. Because claims run in date order, this $2,609.93 line meets most
+    deductibles before any lab test.
   - **Prescription Drugs: Insulin** -> `generic_rx`, following CMS's assumption on the guide's
     Label and Assumptions sheet: "All medications are covered as generic equivalents if
     available". Correction: the first write-up also said "generic insulin glargine exists".
     That was unsourced; unbranded insulin glargine is a biosimilar, not an FDA generic.
   - **Medical Supplies** -> `durable_medical_equipment`. The template's diabetes example lists
     "Durable medical equipment (glucose meter)".
+  - **Other Facility Services** (fiberglass cast supplies, billed at the specialist cast visit)
+    -> `specialist`, as part of that visit. The first draft mapped it to the outpatient surgery
+    facility fee, but no surgery took place.
 - **One is excluded:** Over-the-counter Drugs (not covered; the full amount counts under
   "Limits or exclusions"; director decision 2026-11-23).
-- **Two need the director again:**
-  - **Professional Services: Obstetric Care (Bundled).** Correction: the first write-up said
-    the global fee is billed at delivery. In the guide it is dated at the first prenatal visit
-    (2016-04-01). Delivery is 2016-12-09. The template lists this care as "Specialist office
-    visits (prenatal care)". Because claims run in date order, this $2,609.93 line meets most
-    deductibles before any lab test.
-  - **Other Facility Services** (fiberglass cast supplies, $43.22, billed at the specialist
-    cast visit). No surgery took place, so "Outpatient surgery: facility fee" is not a clean
-    fit. Plans may treat it as part of the specialist visit, as supplies, or as a facility fee.
+- **None remain undecided.**
 
 Plans may classify these differently. A real SBC that does is reported as a `near_match` or
 `mismatch` with its cause, never hidden.

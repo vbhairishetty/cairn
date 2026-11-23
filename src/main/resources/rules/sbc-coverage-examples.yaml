@@ -27,9 +27,9 @@ category_mapping:
     status: mapped
     reason: "SBC row 'Emergency room care' (physician fee)"
   - cms_category: "Other Facility Services"
-    service: null
-    status: needs_director
-    reason: "fiberglass cast supplies billed at the specialist cast visit on the outpatient hospital claim; no surgery took place, so 'Outpatient surgery: facility fee' is not a clean fit; plans may treat it as part of the specialist visit, as supplies, or as a facility fee"
+    service: specialist
+    status: mapped
+    reason: "fiberglass cast supplies billed at the specialist cast visit; treated as part of that visit (director decision, 2026-11-23)"
   - cms_category: "Durable Medical Equipment"
     service: durable_medical_equipment
     status: mapped
@@ -71,9 +71,9 @@ category_mapping:
     status: mapped
     reason: "delivery anesthesia is a professional service at the delivery; SBC row 'Childbirth/delivery professional services'; the template example labels it 'Specialist visit (anesthesia)' (director decision, 2026-11-23)"
   - cms_category: "Professional Services: Obstetric Care (Bundled)"
-    service: null
-    status: needs_director
-    reason: "global obstetric fee of $2,609.93 dated at the first prenatal visit (2016-04-01), not at delivery; its follow-up visits are $0 lines; the template example lists this care as 'Specialist office visits (prenatal care)'; candidate rows: 'prenatal_postnatal_office', 'specialist' or 'childbirth_professional' (re-decision needed: the first decision relied on a wrong statement that it was billed at delivery)"
+    service: prenatal_postnatal_office
+    status: mapped
+    reason: "global obstetric fee dated at the first prenatal visit (2016-04-01); the template lists this care as 'Specialist office visits (prenatal care)'; SBC row 'If you are pregnant: Office visits' (director decision, 2026-11-23)"
   - cms_category: "Prescription Drugs: Insulin"
     service: generic_rx
     status: mapped
