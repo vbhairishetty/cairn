@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 # Behavioral check for the jqwik ban (ADR 0006, TM-14).
 #   (a) A checkout of HEAD with a direct jqwik test dependency must fail the
-#       build with the Enforcer ban failure, not just any failure.
-#   (b) The real checkout must pass ./mvnw -B test, the guard tests must have
-#       run, and neither the console output nor the test reports may mention
-#       jqwik except inside the class name JqwikBanSecurityTest.
+#       build with the Enforcer ban failure, not just any failure. The copy
+#       gets its own local Maven repository so jqwik never enters the shared one.
+#   (b) The real checkout must pass ./mvnw -B test. The local Maven repository
+#       must hold no net/jqwik before or after, the named guard tests must have
+#       run, and nothing under target/ may mention jqwik except inside the class
+#       name JqwikBanSecurityTest. These checks do not depend on how the pom is
+#       written: any route that puts jqwik on a classpath trips them.
 # The working tree must be clean: (a) builds HEAD and (b) builds the tree, so
 # they must be the same content. Locally, commit first.
-# Run from anywhere inside the repository. Extra Maven settings, if any, come
-# from the MAVEN_ARGS environment variable (local runs only; CI must not use it).
+# Run from anywhere inside the repository. For local runs, MAVEN_ARGS may set
+# -Dmaven.repo.local (the repository (b) uses; it must not contain net/jqwik) and
+# -Dmaven.repo.local.tail. MAVEN_LOCAL_REPO names the shared repository that (a)
+# reads from (default $HOME/.m2/repository). CI must set none of them.
+# If the script is killed with SIGKILL the trap cannot run. Clean up with:
+#   git worktree prune
+# (and delete the leftover temporary directory by hand).
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
@@ -20,14 +28,23 @@ if [ "${CI:-}" = "true" ] && [ -n "${MAVEN_ARGS:-}" ]; then
   exit 1
 fi
 
-# A fresh checkout can show mvnw.cmd as modified because of its CRLF
-# attribute, so compare ignoring a carriage return at the end of a line.
-untracked="$(git ls-files --others --exclude-standard)"
-if [ -n "$untracked" ] || ! git diff --quiet --ignore-cr-at-eol HEAD; then
+if [ -n "$(git status --porcelain --ignored=no)" ]; then
   echo "FAIL: working tree is not clean; (a) builds HEAD and (b) builds the tree, so commit or stash first" >&2
   git status --short >&2
   exit 1
 fi
+
+shared_repo="${MAVEN_LOCAL_REPO:-$HOME/.m2/repository}"
+
+# The local repository (b) uses: -Dmaven.repo.local from MAVEN_ARGS if given,
+# else the default.
+used_repo="$HOME/.m2/repository"
+read -r -a maven_arg_words <<< "${MAVEN_ARGS:-}"
+for word in "${maven_arg_words[@]+"${maven_arg_words[@]}"}"; do
+  case "$word" in
+    -Dmaven.repo.local=*) used_repo="${word#-Dmaven.repo.local=}" ;;
+  esac
+done
 
 work_dir="$(mktemp -d)"
 copy_dir="$work_dir/copy"
@@ -71,7 +88,11 @@ if ! grep -q '<groupId>net.jqwik</groupId>' "$copy_dir/pom.xml"; then
 fi
 
 a_status=0
-(cd "$copy_dir" && env MAVEN_OPTS= ./mvnw -B validate) > "$work_dir/a.log" 2>&1 || a_status=$?
+# The copy has its own local repository; the shared one is read only (tail).
+(cd "$copy_dir" && env MAVEN_OPTS= ./mvnw -B \
+  -Dmaven.repo.local="$work_dir/m2-a" \
+  -Dmaven.repo.local.tail="$shared_repo" \
+  validate) > "$work_dir/a.log" 2>&1 || a_status=$?
 
 if [ "$a_status" -eq 0 ]; then
   echo "FAIL (a): build passed with a direct jqwik dependency" >&2
@@ -93,8 +114,20 @@ done
 echo "OK (a): build failed with exit $a_status and the Enforcer ban failure"
 
 echo "== (b) real checkout: ./mvnw -B test must pass without jqwik output =="
-# Remove old reports so only this run's reports are checked.
-rm -rf target/surefire-reports target/failsafe-reports
+# Maven puts every artifact it resolves in the local repository. jqwik must
+# never be resolved, so the directory must be absent before and after.
+echo "checking local repository: $used_repo"
+if [ -e "$used_repo/net/jqwik" ]; then
+  echo "FAIL (b): $used_repo/net/jqwik exists before the run" >&2
+  exit 1
+fi
+if [ -e .jqwik-database ]; then
+  echo "FAIL (b): .jqwik-database exists before the run" >&2
+  exit 1
+fi
+
+# Remove old build output so only this run's files are checked.
+rm -rf target
 
 b_status=0
 env MAVEN_OPTS= ./mvnw -B test > "$work_dir/b.log" 2>&1 || b_status=$?
@@ -105,9 +138,22 @@ if [ "$b_status" -ne 0 ]; then
   exit 1
 fi
 
-# Read stdin, drop the allowed class name, print any other jqwik mention.
+if [ -e "$used_repo/net/jqwik" ]; then
+  echo "FAIL (b): $used_repo/net/jqwik exists after the run; jqwik was resolved" >&2
+  exit 1
+fi
+if [ -e .jqwik-database ]; then
+  echo "FAIL (b): .jqwik-database exists after the run; jqwik ran" >&2
+  exit 1
+fi
+
+# Console output, then every file under target/ (reports, redirected test
+# output, extra report directories). The allowed class name is removed first.
+# Compiled .class files are skipped: the guard's own classes name the library
+# on purpose. Other files are scanned with NUL bytes turned into line breaks.
 scan_for_jqwik() {
-  sed 's/JqwikBanSecurityTest//g' | grep -a -i -n 'jqwik' | cut -c1-200 || true
+  LC_ALL=C tr '\000' '\n' | LC_ALL=C sed 's/JqwikBanSecurityTest//g' \
+    | LC_ALL=C grep -a -i -n 'jqwik' | cut -c1-200 || true
 }
 
 console_hits="$(scan_for_jqwik < "$work_dir/b.log")"
@@ -117,26 +163,24 @@ if [ -n "$console_hits" ]; then
   exit 1
 fi
 
-# Test output can be redirected to files under the report directories.
-report_dirs=()
-for dir in target/surefire-reports target/failsafe-reports; do
-  if [ -d "$dir" ]; then
-    report_dirs+=("$dir")
+if [ ! -d target ]; then
+  echo "FAIL (b): no target directory after the run" >&2
+  exit 1
+fi
+while IFS= read -r -d '' file; do
+  case "$file" in
+    *.class) continue ;;
+  esac
+  file_hits="$(scan_for_jqwik < "$file")"
+  if [ -n "$file_hits" ]; then
+    echo "FAIL (b): $file mentions jqwik outside JqwikBanSecurityTest:" >&2
+    echo "$file_hits" >&2
+    exit 1
   fi
-done
-if [ "${#report_dirs[@]}" -eq 0 ]; then
-  echo "FAIL (b): no test report directory found" >&2
-  exit 1
-fi
-report_hits="$(find "${report_dirs[@]}" -type f -exec cat {} + | scan_for_jqwik)"
-if [ -n "$report_hits" ]; then
-  echo "FAIL (b): test reports mention jqwik outside JqwikBanSecurityTest:" >&2
-  echo "$report_hits" >&2
-  exit 1
-fi
+done < <(find target -type f -print0)
 
 # The guard tests must have run, with at least one test and no failures,
-# errors or skips (an exclude in the build could otherwise hide them).
+# errors or skips (a build change could otherwise hide them).
 require_suite() {
   local file="target/surefire-reports/TEST-$1.xml"
   if [ ! -f "$file" ]; then
@@ -159,7 +203,35 @@ require_suite() {
   fi
   echo "  $1: tests=$tests errors=$errors failures=$failures skipped=$skipped"
 }
+
+# One named test case: present exactly once, with no failure, error or skip.
+require_test_case() {
+  local class="$1" method="$2"
+  local file="target/surefire-reports/TEST-$class.xml"
+  local chunk count
+  if [ ! -f "$file" ]; then
+    echo "FAIL (b): missing test report $file" >&2
+    exit 1
+  fi
+  chunk="$(tr '\n' ' ' < "$file" | sed 's#<testcase #\n<testcase #g' \
+    | grep -F "<testcase name=\"$method\" classname=\"$class\"" || true)"
+  count="$(printf '%s' "$chunk" | grep -c . || true)"
+  if [ "$count" -ne 1 ]; then
+    echo "FAIL (b): expected exactly one test case $class#$method, found $count" >&2
+    exit 1
+  fi
+  if printf '%s' "$chunk" | grep -q -E '<(failure|error|skipped|flakyFailure|rerunFailure|flakyError|rerunError)'; then
+    echo "FAIL (b): test case $class#$method did not pass" >&2
+    exit 1
+  fi
+  echo "  $class#$method: passed"
+}
+
 require_suite app.cairn.JqwikBanSecurityTest
 require_suite app.cairn.BuildConfigurationTest
+require_test_case app.cairn.JqwikBanSecurityTest unchangedLiveBuildFilesAreNotReported
+require_test_case app.cairn.JqwikBanSecurityTest blankMavenConfigIsNotReported
+require_test_case app.cairn.BuildConfigurationTest buildGuardFindsNoViolationsInTheRealBuildFiles
+require_test_case app.cairn.BuildConfigurationTest errorProneTreatsReferenceAndBigDecimalEqualityAsErrors
 
-echo "OK (b): tests passed, guard tests ran, and no jqwik text in console or reports"
+echo "OK (b): tests passed, named guard tests ran, no net/jqwik in $used_repo, no jqwik text under target/"
