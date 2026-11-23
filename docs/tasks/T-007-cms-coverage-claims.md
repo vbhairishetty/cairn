@@ -1,7 +1,7 @@
 ---
 id: T-007
 title: Find, cite and record the CMS coverage-example claims
-status: IN_REVIEW
+status: DONE
 complexity: medium
 risk: high
 agent: orchestrator

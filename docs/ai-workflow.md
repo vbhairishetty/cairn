@@ -22,10 +22,10 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 3 |
-| Review rounds (total) | 12 |
-| Reviewer findings (High / Medium / Low) | 0 / 8 / 37 |
-| Security findings (High / Medium / Low) | 0 / 3 / 10 |
+| Tasks merged | 4 |
+| Review rounds (total) | 16 |
+| Reviewer findings (High / Medium / Low) | 0 / 15 / 47 |
+| Security findings (High / Medium / Low) | 0 / 3 / 12 |
 | Agent outputs rejected by the orchestrator | 1 |
 | CI failures after local gates passed | 0 |
 
@@ -165,3 +165,36 @@ rewritten except to correct a factual error.
 - Interview note: "Reviewers found more than a dozen ways to switch off a one-line build
   ban, and the fix that ended it was to stop listing bad configurations and allow only the one
   good one, with the real proof being a CI job that tries to add the banned library."
+
+### T-007: Find, cite and record the CMS coverage-example claims (2026-11-23)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/6
+- Implementer: orchestrator (research and data work; a general-purpose research agent found the
+  sources); rounds: 4
+- Reviewer findings: 7 Medium, 10 Low.
+  - Most important (R1): the orchestrator's reason text said the bundled obstetric fee was
+    billed at delivery. The CMS guide dates it at the first prenatal visit. The director had
+    already decided a mapping on that wrong premise; the mapping was reopened and re-decided.
+  - The other Mediums were design gaps in reconciliation: per-field rows, a half-up tie rule,
+    the copay-to-deductible split, and a tolerance that could never pass because a $50 limit
+    cannot absorb a $100 rounding step. The reviewer rebuilt all 165 claim lines from CMS
+    with its own parser.
+- Security findings: 2 Low. Each guide is now pinned by SHA-256 and revision in the data, and
+  provenance fields are repeated per scenario. Safe-loading rules for the future loader
+  (proposed TM-09a) are recorded in TASKS.md.
+- Rejected: nothing from agents. Recorded errors by the orchestrator:
+  - the wrong obstetric date
+  - an unsourced "generic insulin glargine exists"
+  - an overstated "13 categories" count
+  - a mapping (cast supplies) marked clean when it was not
+  - a rounding-edge list that contradicted the tolerance
+- CI: none yet (T-004). Gates were run locally.
+- Director decisions:
+  - store no CPT codes or AMA descriptors
+  - reconcile after CMS rounding and caps, comparing every printed field
+  - the category mappings, including two re-decisions after the corrected facts
+  - derived rows inherit `near_match`
+  - SBC fixtures are not committed, only URL, hash and a download script
+  - the first golden SBC is the City of Seattle Kaiser HMO
+- Interview note: "The reviewer re-derived every claim line from the government source and
+  caught that I had fed the director a wrong date; we fixed the data and the decision, and
+  wrote down both."
