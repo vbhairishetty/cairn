@@ -109,19 +109,22 @@ the same rounding and caps to the engine's results and compares every printed fi
 
 ## Rounding edges that allow a `near_match`
 
-A field that differs from the printed value by $50 or less passes only for one of these causes.
-The cause is shown with the result.
+A `near_match` exists only for a field under $100. Those fields round to the nearest $10, so
+one rounding step is a $10 difference, inside the $50 limit. Fields of $100 or more round to the
+nearest $100, so one step is a $100 difference. That is always a `mismatch`, escalated to the
+director with its cause, never absorbed (director rule: reconciliation stays strict).
+
+A field under $100 that differs by one $10 step passes only for one of these causes, and the
+cause is shown with the result:
 
 1. **Sub-cent amounts:** Cairn rounds each claim line to cents before use. For the diabetes
    scenario this moves the total from 5,601.1016 to 5,601.13. A plan's own calculator may keep
-   full precision, so a field just across a $5 or $50 rounding boundary can land one step away.
-2. **Exactly $100:** the guides and the instructions disagree on whether exactly $100 rounds to
-   the hundred or the ten.
-3. **Tie rule:** CMS states no tie rule. A plan that rounds a tie down (for example $250 to
-   $200) differs from Cairn's half up by one rounding step.
+   full precision, so a field just across a $5 boundary can land one $10 step away.
+2. **Tie rule:** CMS states no tie rule, and Cairn rounds half up. A plan that rounds a tie
+   down shows, for example, $20 where Cairn shows $30 for $25.
 
-Any other cause, including a plan classifying a service differently from Cairn's mapping, is a
-`mismatch`.
+Exactly $100 is not an edge: it rounds to $100 under both CMS wordings. Any other cause,
+including a plan classifying a service differently from Cairn's mapping, is a `mismatch`.
 
 ## Category mapping
 
