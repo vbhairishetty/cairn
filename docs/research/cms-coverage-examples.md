@@ -109,13 +109,14 @@ the same rounding and caps to the engine's results and compares every printed fi
 
 ## Rounding edges that allow a `near_match`
 
-A `near_match` exists only for a field under $100. Those fields round to the nearest $10, so
-one rounding step is a $10 difference, inside the $50 limit. Fields of $100 or more round to the
-nearest $100, so one step is a $100 difference. That is always a `mismatch`, escalated to the
-director with its cause, never absorbed (director rule: reconciliation stays strict).
+A `near_match` exists only for a printed field whose printed value is under $100 and which
+differs from Cairn's by exactly $10, one rounding step. Fields of $100 or more round to the
+nearest $100, so any difference there is a `mismatch`, escalated to the director with its cause
+and never absorbed (director rule: reconciliation stays strict). The derived rows
+(`cost_sharing_sum`, `total`) inherit a `near_match` only when their difference is exactly the
+sum of their `near_match` fields' differences (design section 6).
 
-A field under $100 that differs by one $10 step passes only for one of these causes, and the
-cause is shown with the result:
+The $10 difference passes only for one of these causes, and the cause is shown with the result:
 
 1. **Sub-cent amounts:** Cairn rounds each claim line to cents before use. For the diabetes
    scenario this moves the total from 5,601.1016 to 5,601.13. A plan's own calculator may keep
