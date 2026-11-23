@@ -90,6 +90,10 @@ scenarios:
   - scenario: having_baby
     title: "Peg is Having a Baby"
     source_url: https://www.cms.gov/files/document/having-baby-guide-060723-xlsx.xlsx
+    source_sha256: 14861670f5e09d5690b2b94e1aee16577b76f7646559c231b359dffc01aa9d22
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
     source_pdf_url: https://www.cms.gov/files/document/having-baby-guide-060723-pdf.pdf
     total_example_cost_printed: "12700"
     total_allowed_published: "12686.85"
@@ -397,6 +401,10 @@ scenarios:
   - scenario: managing_diabetes
     title: "Managing Joe's Type 2 Diabetes"
     source_url: https://www.cms.gov/files/document/managing-type-2-diabetes-guide-060723-xlsx.xlsx
+    source_sha256: f483386a60feb231eaa02f51db963a82d768ae938d39b9e9a7adec7660112976
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
     source_pdf_url: https://www.cms.gov/files/document/managing-type-2-diabetes-guide-060723-pdf.pdf
     total_example_cost_printed: "5600"
     total_allowed_published: "5601.1016345616"
@@ -986,6 +994,10 @@ scenarios:
   - scenario: simple_fracture
     title: "Mia's Simple Fracture"
     source_url: https://www.cms.gov/files/document/simple-fracture-guide-060723-xlsx.xlsx
+    source_sha256: 81fedef1021ec8095052a3d0db6dd565b6b36b365091974408822e6c88cc421e
+    source_revision: 2023-06-07
+    effective_from: 2021-01-01
+    verified_on: 2026-11-23
     source_pdf_url: https://www.cms.gov/files/document/simple-fracture-guide-060723-pdf.pdf
     total_example_cost_printed: "2800"
     total_allowed_published: "2800.17"

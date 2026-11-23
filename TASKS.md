@@ -43,6 +43,14 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
 - Engine card: CMS claims list one visit as several same-day lines (for example the fracture ER
   visit: ambulance, facility, x-ray, treatment). Define whether a copay applies per visit or
   per line before writing the reconciliation tests (T-007).
+- Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
+  records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
+  fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
+  every claim category must be in `category_mapping`; `service` is null only when `status` is
+  `excluded`; each scenario's line sum must equal `total_allowed_published`; each scenario must
+  carry `source_sha256`, `source_revision`, `effective_from` and `verified_on`. Add
+  `RuleDataLoaderSecurityTest` with one failing fixture per rule. The Rule Watcher compares
+  `source_sha256` with the live file.
 - Any card that adds a second Enforcer rule: add guard tests for `skipRules` and
   `enforcer.skipRules` in the pom and `.mvn` files (T-009 review R9).
 - README Privacy connection sentence: update it if the email stretch (Mailpit SMTP) ships, and
