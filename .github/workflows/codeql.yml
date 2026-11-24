@@ -36,6 +36,8 @@ jobs:
         with:
           languages: java-kotlin
           build-mode: manual
+      - name: Download Maven (with retry)
+        run: scripts/ci/maven-download-with-retry.sh
       - name: Build
         run: ./mvnw -B clean compile
       - name: Analyze

@@ -31,6 +31,8 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: Download Maven (with retry)
+        run: scripts/ci/maven-download-with-retry.sh
       - name: Build and run all gates
         run: ./mvnw -B clean verify
 
@@ -52,5 +54,7 @@ jobs:
           # Without this, setup-java exports MAVEN_ARGS=-ntp, and the script refuses any
           # MAVEN_ARGS in CI so nothing can move the local repository it checks.
           show-download-progress: true
+      - name: Download Maven (with retry)
+        run: scripts/ci/maven-download-with-retry.sh
       - name: Check the jqwik ban end to end
         run: scripts/ci/jqwik-ban-check.sh
