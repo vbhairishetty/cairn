@@ -22,12 +22,12 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 4 |
-| Review rounds (total) | 16 |
-| Reviewer findings (High / Medium / Low) | 0 / 15 / 47 |
-| Security findings (High / Medium / Low) | 0 / 3 / 12 |
+| Tasks merged | 5 |
+| Review rounds (total) | 19 |
+| Reviewer findings (High / Medium / Low) | 0 / 19 / 55 |
+| Security findings (High / Medium / Low) | 0 / 4 / 15 |
 | Agent outputs rejected by the orchestrator | 1 |
-| CI failures after local gates passed | 0 |
+| CI failures after local gates passed | 2 |
 
 ## Design reviews
 
@@ -198,3 +198,41 @@ rewritten except to correct a factual error.
 - Interview note: "The reviewer re-derived every claim line from the government source and
   caught that I had fed the director a wrong date; we fixed the data and the decision, and
   wrote down both."
+
+### T-004: Add CI, CodeQL, dependency review, Dependabot and the jqwik behavioral check (2026-11-24)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/7
+- Implementer: sde1-implementer (Sonnet); rounds: 3
+- Reviewer findings: 4 Medium, 8 Low.
+  - Most important: each round found a new way to make both CI jobs green while jqwik ran:
+    - round 1: an export-ignored `.mvn/maven.config` skip missing from the `git archive` copy,
+      plus output redirected to report files;
+    - round 2: Surefire method filters plus an extra test execution with jqwik on its
+      classpath and hidden reports.
+  - Round 3 replaced pom-shape checks with one that does not depend on the pom: the build with
+    jqwik added gets its own local repository, and a normal test run must leave no `net/jqwik`
+    in the shared one.
+  - Three deliberate-edit bypasses remain as Low, listed in TM-14.
+- Security findings: 1 Medium, 3 Low. Most important (S1): the pinned `setup-java` action
+  exports `MAVEN_ARGS=-ntp`, so the script's refusal of any `MAVEN_ARGS` in CI would have
+  failed `jqwik-ban` on every run. No local run could show it. The fix was
+  `show-download-progress: true`. Also fixed: every push to `main` keeps its own CI result, and
+  Dependabot waits 7 days after a release.
+- Rejected: nothing from agents. The orchestrator found and fixed its own T-009 bug: the
+  `.gitattributes` line `mvnw.cmd text eol=crlf` made every fresh clone show `mvnw.cmd` as
+  modified.
+- CI: two red runs after local gates passed.
+  - On the PR, `dependency-review` returned "Forbidden" because the repository's Dependency
+    graph was off. The director enabled it.
+  - On `main` after the merge, `build` failed before Maven started, because the wrapper could
+    not download Maven from Maven Central once. A re-run passed. Caching the Maven download is
+    proposed as a follow-up.
+  - Negative proof: a temporary commit removing the ban turned `build` and `jqwik-ban` red
+    (run 45295130586), then was reverted.
+- Director decisions:
+  - approve pushing workflow files once security passed
+  - enable the Dependency graph and Dependabot alerts
+  - first Dependabot PRs: review #9 (compiler plugin) and close #8 (Maven 3.10 upgrade
+    deferred, because the wrapper hash pin needs a deliberate task)
+- Interview note: "Every local check passed, and the security reviewer still found that a
+  pinned GitHub action set an environment variable that would have failed our check on every
+  CI run."
