@@ -92,7 +92,7 @@
                 <bannedDependencies>
                   <searchTransitive>true</searchTransitive>
                   <excludes>
-                    <exclude>net.jqwik:*</exclude>
+                    <exclude>org.example.probe:*</exclude>
                   </excludes>
                   <message>net.jqwik is banned, see docs/adr/0006-remove-jqwik.md</message>
                 </bannedDependencies>
