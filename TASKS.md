@@ -12,12 +12,13 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-001 | Maven project skeleton with Spring Boot, Spring Modulith, Spotless, Error Prone, JaCoCo | junior-implementer | DONE (PR #2) | design PR merged |
 | T-002 | Modularity test and module root packages for all modules | sde1-implementer | READY | T-001 |
 | T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | READY | T-001 |
-| T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config; jqwik behavioral check | sde1-implementer | IN_REVIEW (PR #7) | T-001, T-009 |
+| T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config; jqwik behavioral check | sde1-implementer | DONE (PR #7) | T-001, T-009 |
 | T-005 | `common.Money` and `SourceRef` value types with property tests | sde2-implementer | READY | T-002 |
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | READY (needs public SBC PDFs) | - |
 | T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | DONE (PR #6) | - |
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
+| T-010 | Retry the Maven wrapper download in CI | sde1-implementer | READY | T-004 |
 
 ## Day 2 onward
 

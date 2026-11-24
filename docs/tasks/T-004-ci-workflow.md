@@ -1,7 +1,7 @@
 ---
 id: T-004
 title: Add CI, CodeQL, dependency review, Dependabot and the jqwik behavioral check
-status: IN_REVIEW
+status: DONE
 complexity: medium
 risk: medium
 agent: sde1-implementer
