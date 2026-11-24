@@ -6,6 +6,8 @@
 # A checksum mismatch is never retried. Other failures are retried up to 3 times.
 # Usage: maven-download-with-retry.sh [wrapper-path] [delay-seconds]
 # The delay argument exists only so the local stub test can run fast.
+# For local runs, set MAVEN_USER_HOME to a temporary directory first; otherwise this deletes
+# your own ~/.m2/wrapper/dists (a re-download, not data loss).
 set -euo pipefail
 
 wrapper="${1:-./mvnw}"
@@ -22,6 +24,7 @@ esac
 
 maven_home="${MAVEN_USER_HOME:-${HOME:?HOME is not set}/.m2}"
 rm -rf -- "${maven_home}/wrapper/dists"
+echo "Deleted cached Maven distributions under ${maven_home}/wrapper/dists"
 
 log_file="$(mktemp)"
 trap 'rm -f -- "$log_file"' EXIT

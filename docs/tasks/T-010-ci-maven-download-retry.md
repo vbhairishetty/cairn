@@ -63,8 +63,8 @@ asks the director before pushing.
    argument so it can be tested; it defaults to `./mvnw`.)*
 5. Given the pull request, When CI runs, Then `build`, `jqwik-ban`, `codeql` and
    `dependency-review` are green, and each job's log shows
-   `Maven download ok on attempt 1` after a real download (the step deleted the cached
-   distribution first).
+   `Deleted cached Maven distributions under ...` followed by `Maven download ok on attempt 1`
+   (the download itself is quiet in the log, so the delete line is the evidence).
 
 ## Out of scope
 
@@ -94,7 +94,7 @@ none.
 | Test | Level | Covers criteria |
 | --- | --- | --- |
 | Stub `mvnw` that fails twice then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
-| A pre-populated `wrapper/dists/.../bin/mvn` that prints a marker is deleted and never run | local script test | 1 |
+| A pre-populated `wrapper/dists/.../bin/mvn` that prints a marker is deleted and never run (local runs set `MAVEN_USER_HOME` to a temporary directory) | local script test | 1 |
 | A stub that prints the checksum-mismatch line exits non-zero after exactly one attempt | local script test | 1 |
 | CI run on the PR, each job showing attempt 1 | CI | 1, 5 |
 | actionlint (checksum-verified temporary binary) and a read-through of permissions | review | 2 |
