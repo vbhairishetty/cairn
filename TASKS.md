@@ -18,7 +18,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | DONE (PR #6) | - |
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
-| T-010 | Retry the Maven wrapper download in CI | sde1-implementer | IN_PROGRESS | T-004 |
+| T-010 | Retry the Maven wrapper download in CI | sde1-implementer | IN_REVIEW (PR #11) | T-004 |
 
 ## Day 2 onward
 
