@@ -31,6 +31,8 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: Download Maven (with retry)
+        run: scripts/ci/maven-download-with-retry.sh
       - name: Initialize CodeQL
         uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
