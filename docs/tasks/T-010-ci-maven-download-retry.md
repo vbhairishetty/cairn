@@ -25,10 +25,16 @@ On 2026-11-24 the `build` job on `main` (run 45296340292) failed before Maven st
 log showed `wget: Failed to fetch .../apache-maven-3.9.16-bin.zip`, and a re-run passed. Every
 job downloads Maven through `./mvnw` (wrapper 3.3.4, `only-script`), which verifies
 `distributionSha256Sum` when it downloads. The T-001 security review noted that the wrapper
-does **not** re-check a distribution that is already under `~/.m2/wrapper/dists`. Caching that
-folder across runs would therefore reuse a copy that is never verified again, and would add a
-third-party action. The director approved fixing the flaky download (2026-11-24). This card
-uses a retry, which needs neither. `.claude/rules/testing.md` treats an intermittent failure as
+does **not** re-check a distribution that is already under `~/.m2/wrapper/dists`.
+
+**Correction (2026-11-24, review of this card):** the first version of this card said that
+folder was not cached across runs. That was wrong. The pinned `actions/setup-java` v6.3.0 with
+`cache: maven` also caches `~/.m2/wrapper/dists` as a separate `maven-wrapper` cache. The
+`main` runs log "maven-wrapper cache restored", and the wrapper runs that copy without checking
+it again. The director decided (2026-11-24) that the retry script deletes `~/.m2/wrapper/dists`
+before its first attempt, so every job downloads Maven and verifies its checksum. The retry
+covers the extra downloads. The `~/.m2/repository` cache stays and is recorded as an accepted
+risk (TM-15). The director approved fixing the flaky download (2026-11-24). `.claude/rules/testing.md` treats an intermittent failure as
 a bug to fix, not to re-run.
 
 Workflow files change only through a card that says so. This card does, and the orchestrator
@@ -37,9 +43,12 @@ asks the director before pushing.
 ## Acceptance criteria
 
 1. Given `ci.yml` (`build`, `jqwik-ban`) and `codeql.yml` (`codeql`), When a job runs, Then
-   before its first Maven command a step named `Download Maven (with retry)` runs `./mvnw -B -v`
-   up to 3 times, 15 seconds apart. It stops at the first success and fails the job if all 3
-   attempts fail.
+   before its first Maven command a step named `Download Maven (with retry)` first deletes
+   `${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists`, then runs `./mvnw -B -v` up to 3 times, 15
+   seconds apart. It stops at the first success and fails the job if all 3 attempts fail. If an
+   attempt reports a checksum mismatch ("Failed to validate Maven distribution SHA-256"), the
+   script fails at once with no retry, so a tampering signal is never turned into a green run.
+   In `codeql` the step runs before `Initialize CodeQL`.
 2. Given the retry step, When it is read, Then it uses no `${{ }}` expressions inside `run:`, no
    new action, no secrets and no change to permissions. It lives in one script,
    `scripts/ci/maven-download-with-retry.sh`, called from each job, so the logic is not copied
@@ -54,12 +63,12 @@ asks the director before pushing.
    argument so it can be tested; it defaults to `./mvnw`.)*
 5. Given the pull request, When CI runs, Then `build`, `jqwik-ban`, `codeql` and
    `dependency-review` are green, and each job's log shows
-   `Maven download ok on attempt 1`.
+   `Maven download ok on attempt 1` after a real download (the step deleted the cached
+   distribution first).
 
 ## Out of scope
 
-- Caching `~/.m2/wrapper` or `~/.m2/repository` beyond what `setup-java` already does
-  (rejected above).
+- Changing `setup-java` caching (the director kept `cache: maven`; see TM-15).
 - Upgrading Maven (Dependabot PR #8 was closed; a deliberate upgrade card later).
 - Retrying Maven dependency downloads during the build (Maven has its own resolver retries).
 
@@ -85,14 +94,17 @@ none.
 | Test | Level | Covers criteria |
 | --- | --- | --- |
 | Stub `mvnw` that fails twice then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
+| A pre-populated `wrapper/dists/.../bin/mvn` that prints a marker is deleted and never run | local script test | 1 |
+| A stub that prints the checksum-mismatch line exits non-zero after exactly one attempt | local script test | 1 |
 | CI run on the PR, each job showing attempt 1 | CI | 1, 5 |
 | actionlint (checksum-verified temporary binary) and a read-through of permissions | review | 2 |
 
 ## Security and privacy
 
 - Trust boundaries touched: CI runners, the Maven Central download.
-- Threats: TM-10. The wrapper still verifies the pinned SHA-256 on every download, and nothing
-  unverified is cached.
+- Threats: TM-10 and TM-15. The wrapper verifies the pinned SHA-256 on every job's download,
+  because the cached distribution is deleted first. The cached `~/.m2/repository` is an
+  accepted risk recorded in TM-15.
 - Secrets: none. Personal data: none.
 
 ## Gates
