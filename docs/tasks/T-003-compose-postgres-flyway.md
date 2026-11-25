@@ -158,6 +158,10 @@ All gates in `/verify-gates` must pass. `./mvnw verify` now needs Docker running
 - S3: the image is pinned by tag and digest (`name:tag@sha256:...`, the multi-arch index
   digest). Compose and Testcontainers read the same line, and a test requires the digest.
 
+**Review decision (orchestrator, 2026-11-25, review R2):** `spring.flyway.default-schema` is
+`flyway`, a dedicated non-module schema, so the migration history never sits in a module's
+schema and a delete-all of module data cannot wipe it. Migrations stay schema-qualified.
+
 ## Notes
 
 - Pin the image to an exact tag (for example `pgvector/pgvector:0.8.x-pg16`, the newest
