@@ -35,8 +35,9 @@ are the table in `.claude/rules/architecture.md`; `web` and `cli` may use any mo
    `cli`.
 2. Given each `package-info.java`, When it is read, Then it carries
    `@org.springframework.modulith.ApplicationModule` with `allowedDependencies` equal to that
-   module's row in the architecture table. `common` allows none. `web` and `cli` list every
-   other module. Each file has a one-line comment naming the module's job.
+   module's row in the architecture table. `common` allows none. `web` and `cli` each list
+   every module except themselves and each other (director decision, 2026-11-25: they may not
+   depend on each other, so no web/cli cycle is possible). Each file has a one-line comment naming the module's job.
 3. Given `src/test/java/app/cairn/ModularityTest.java`, When `./mvnw test` runs, Then
    `ApplicationModules.of(CairnApplication.class).verify()` passes.
 4. Given a temporary class in `app.cairn.engine` that references a class in `app.cairn.jobs`

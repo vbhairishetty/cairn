@@ -36,8 +36,8 @@ Cycles are forbidden.
 | `timeline` | `common`, `rules` |
 | `reminders` | `common`, `validate`, `rules`, `profile` (ADR 0002) |
 | `ask` | `common`, `engine`, `validate`, `rules` |
-| `web` | any module's public API, never internals |
-| `cli` | any module's public API, never internals |
+| `web` | any module's public API except `cli`, never internals |
+| `cli` | any module's public API except `web`, never internals |
 
 If a task needs a dependency that is not in this table, stop and propose an ADR instead of
 adding it.
