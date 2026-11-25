@@ -3,7 +3,12 @@ package app.cairn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.modulith.ApplicationModule;
 import org.springframework.modulith.core.ApplicationModules;
 
 class ModularityTest {
@@ -31,6 +36,53 @@ class ModularityTest {
   @Test
   void modulesFollowTheAllowedDependencies() {
     modules.verify();
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("architectureTable")
+  void declaredDependenciesMatchTheArchitectureTable(String module, List<String> expected)
+      throws ClassNotFoundException {
+    ApplicationModule annotation =
+        Class.forName("app.cairn." + module + ".package-info")
+            .getPackage()
+            .getAnnotation(ApplicationModule.class);
+
+    assertThat(annotation).isNotNull();
+    assertThat(annotation.allowedDependencies()).containsExactlyInAnyOrderElementsOf(expected);
+  }
+
+  static Stream<Arguments> architectureTable() {
+    List<String> everyOther =
+        List.of(
+            "common",
+            "documents",
+            "jobs",
+            "extract",
+            "normalize",
+            "validate",
+            "engine",
+            "diff",
+            "rules",
+            "profile",
+            "timeline",
+            "reminders",
+            "ask");
+    return Stream.of(
+        Arguments.of("common", List.of()),
+        Arguments.of("documents", List.of("common")),
+        Arguments.of("jobs", List.of("common")),
+        Arguments.of("extract", List.of("common", "documents", "jobs")),
+        Arguments.of("normalize", List.of("common", "extract")),
+        Arguments.of("validate", List.of("common", "normalize")),
+        Arguments.of("engine", List.of("common", "validate", "rules")),
+        Arguments.of("diff", List.of("common", "validate")),
+        Arguments.of("rules", List.of("common")),
+        Arguments.of("profile", List.of("common")),
+        Arguments.of("timeline", List.of("common", "rules")),
+        Arguments.of("reminders", List.of("common", "validate", "rules", "profile")),
+        Arguments.of("ask", List.of("common", "engine", "validate", "rules")),
+        Arguments.of("web", everyOther),
+        Arguments.of("cli", everyOther));
   }
 
   @Test
