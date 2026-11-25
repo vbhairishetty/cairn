@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.modulith.ApplicationModule;
+import org.springframework.modulith.Modulithic;
 import org.springframework.modulith.core.ApplicationModules;
 
 class ModularityTest {
@@ -84,6 +85,11 @@ class ModularityTest {
         Arguments.of("ask", List.of("common", "engine", "validate", "rules")),
         Arguments.of("web", everyOther),
         Arguments.of("cli", everyOther));
+  }
+
+  @Test
+  void applicationDeclaresNoModulithicSettings() {
+    assertThat(CairnApplication.class.getAnnotation(Modulithic.class)).isNull();
   }
 
   @Test
