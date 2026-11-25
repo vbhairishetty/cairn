@@ -25,7 +25,8 @@ reaches into another module's internals.
 T-001 created `app.cairn.CairnApplication` with Spring Boot 4.1.3 and Spring Modulith 2.1.3
 (`spring-modulith-starter-core` and `spring-modulith-starter-test` are already in `pom.xml`).
 There are no module packages yet. The module list is in `CLAUDE.md`. The allowed dependencies
-are the table in `.claude/rules/architecture.md`; `web` and `cli` may use any module's public API.
+are the table in `.claude/rules/architecture.md`; `web` and `cli` may use any module's public API
+except each other.
 
 ## Acceptance criteria
 
