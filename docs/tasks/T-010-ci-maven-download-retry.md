@@ -40,12 +40,21 @@ a bug to fix, not to re-run.
 Workflow files change only through a card that says so. This card does, and the orchestrator
 asks the director before pushing.
 
+**Round 3 change (director, 2026-11-25):** after merge-ready CI, one `jqwik-ban` run
+(45323210784) failed all 3 attempts within 30 seconds, while the other jobs in the same run
+downloaded Maven. A re-run passed. Deleting the cache means every job now downloads Maven, so
+the retry window was widened to 5 attempts over about 4 minutes, with the wrapper's real
+download error shown in the log.
+
 ## Acceptance criteria
 
 1. Given `ci.yml` (`build`, `jqwik-ban`) and `codeql.yml` (`codeql`), When a job runs, Then
    before its first Maven command a step named `Download Maven (with retry)` first deletes
-   `${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists`, then runs `./mvnw -B -v` up to 3 times, 15
-   seconds apart. It stops at the first success and fails the job if all 3 attempts fail. If an
+   `${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists`, then runs `./mvnw -B -v` up to 5 times, waiting
+   15, 30, 60 and 120 seconds between attempts (about 4 minutes of waiting; each attempt is
+   bounded only by the job timeout). It stops at the first
+   success and fails the job if all 5 attempts fail. The wrapper runs in verbose mode inside
+   the script only, so a failed download shows its real error in the log. If an
    attempt reports a checksum mismatch ("Failed to validate Maven distribution SHA-256"), the
    script fails at once with no retry, so a tampering signal is never turned into a green run.
    In `codeql` the step runs before `Initialize CodeQL`.
@@ -55,16 +64,19 @@ asks the director before pushing.
    three times.
 3. Given the script, When the download succeeds on attempt N, Then it prints
    `Maven download ok on attempt N`. When all attempts fail, it prints
-   `FAIL: Maven download failed 3 times` and exits non-zero.
+   `FAIL: Maven download failed 5 times` and exits non-zero.
 4. Given a local test with a fake failing `mvnw` (a stub in a temporary directory that fails
-   twice and then succeeds), When the script runs against it, Then it reports success on
-   attempt 3. With a stub that always fails, it exits non-zero after 3 attempts. *(Evidence in
+   four times and then succeeds), When the script runs against it, Then it reports success on
+   attempt 5. With a stub that always fails, it exits non-zero after 5 attempts. *(Evidence in
    the report; the stubs are not committed. The script takes the wrapper path as an optional
    argument so it can be tested; it defaults to `./mvnw`.)*
 5. Given the pull request, When CI runs, Then `build`, `jqwik-ban`, `codeql` and
-   `dependency-review` are green, and each job's log shows
-   `Deleted cached Maven distributions under ...` followed by `Maven download ok on attempt 1`
-   (the download itself is quiet in the log, so the delete line is the evidence).
+   `dependency-review` are green, and the log of each Maven job (`build`, `jqwik-ban`,
+   `codeql`) shows
+   `Deleted cached Maven distributions under ...`, then the wrapper's verbose line
+   `Couldn't find MAVEN_HOME, downloading and installing it`, then `Maven download ok on
+   attempt 1`. The verbose line appears only when no cached copy was used, so it is the
+   evidence.
 
 ## Out of scope
 
@@ -76,7 +88,7 @@ asks the director before pushing.
 
 | Action | Path | Purpose |
 | --- | --- | --- |
-| create | `scripts/ci/maven-download-with-retry.sh` | download Maven through the wrapper with up to 3 attempts |
+| create | `scripts/ci/maven-download-with-retry.sh` | download Maven through the wrapper with up to 5 attempts |
 | modify | `.github/workflows/ci.yml` | call the script before the first Maven command in both jobs |
 | modify | `.github/workflows/codeql.yml` | call the script before the build step |
 
@@ -93,7 +105,7 @@ none.
 
 | Test | Level | Covers criteria |
 | --- | --- | --- |
-| Stub `mvnw` that fails twice then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
+| Stub `mvnw` that fails four times then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
 | A pre-populated `wrapper/dists/.../bin/mvn` that prints a marker is deleted and never run (local runs set `MAVEN_USER_HOME` to a temporary directory) | local script test | 1 |
 | A stub that prints the checksum-mismatch line exits non-zero after exactly one attempt | local script test | 1 |
 | CI run on the PR, each job showing attempt 1 | CI | 1, 5 |
