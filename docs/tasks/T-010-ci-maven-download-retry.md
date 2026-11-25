@@ -1,7 +1,7 @@
 ---
 id: T-010
 title: Retry the Maven wrapper download in CI
-status: IN_REVIEW
+status: DONE
 complexity: low
 risk: medium
 agent: sde1-implementer

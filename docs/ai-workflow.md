@@ -22,12 +22,12 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 5 |
-| Review rounds (total) | 19 |
-| Reviewer findings (High / Medium / Low) | 0 / 19 / 55 |
-| Security findings (High / Medium / Low) | 0 / 4 / 15 |
+| Tasks merged | 6 |
+| Review rounds (total) | 22 |
+| Reviewer findings (High / Medium / Low) | 1 / 19 / 63 |
+| Security findings (High / Medium / Low) | 0 / 5 / 20 |
 | Agent outputs rejected by the orchestrator | 1 |
-| CI failures after local gates passed | 2 |
+| CI failures after local gates passed | 3 |
 
 ## Design reviews
 
@@ -236,3 +236,30 @@ rewritten except to correct a factual error.
 - Interview note: "Every local check passed, and the security reviewer still found that a
   pinned GitHub action set an environment variable that would have failed our check on every
   CI run."
+
+### T-010: Retry the Maven wrapper download in CI (2026-11-25)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/11 (merged through #12)
+- Implementer: sde1-implementer (Sonnet); rounds: 3
+- Reviewer findings: 1 High, 8 Low.
+  - Most important (High): the orchestrator's card said the Maven download was not cached
+    between CI runs. The pinned `setup-java` with `cache: maven` also caches
+    `~/.m2/wrapper/dists`, and the wrapper runs that copy without re-checking its checksum.
+  - The security reviewer found the same thing independently. The director decided to delete
+    the cached copy before every download, and to record cached dependency jars as an
+    accepted risk (new TM-15).
+- Security findings: 1 Medium (the same false premise), 5 Low: a retry could hide a checksum
+  mismatch, the CI log could not prove a fresh download, and the card wording was stale.
+- Rejected: nothing from agents. The orchestrator's own card premise was wrong; it was
+  corrected in the card with a dated note.
+- CI: one red run after local gates passed. On the green PR, one `jqwik-ban` run failed all
+  three download attempts within 30 seconds, while other jobs in the same run downloaded
+  Maven. A re-run passed. The director approved widening the retry to five attempts over
+  about four minutes, with the wrapper in verbose mode so the real error reaches the log.
+- Director decisions:
+  - retry rather than cache
+  - delete the cached Maven before each download
+  - accept the dependency-jar cache risk (TM-15)
+  - widen the backoff after the CI-only failure
+- Interview note: "Two reviewers independently caught that my own task card had the caching
+  behavior of a pinned GitHub action wrong, which would have left an unverified build tool in
+  every CI run."

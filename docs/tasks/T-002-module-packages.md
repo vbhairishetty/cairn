@@ -1,7 +1,7 @@
 ---
 id: T-002
 title: Create the module root packages and the Modularity test
-status: READY
+status: IN_PROGRESS
 complexity: low
 risk: low
 agent: sde1-implementer
