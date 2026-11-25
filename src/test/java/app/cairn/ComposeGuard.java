@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -47,11 +48,11 @@ final class ComposeGuard {
           if (service.containsKey("extends")) {
             result.add("service " + name + " uses extends");
           }
-          if ("host".equals(service.get("network_mode"))) {
-            result.add("service " + name + " uses network_mode host");
+          if (service.containsKey("network_mode")) {
+            result.add("service " + name + " sets network_mode, which no Cairn service needs");
           }
           for (String port : ports(service)) {
-            if (!port.startsWith(LOOPBACK)) {
+            if (!port.startsWith(LOOPBACK) || port.contains("${")) {
               result.add("service " + name + " port is not loopback short form: " + port);
             }
           }
@@ -74,7 +75,7 @@ final class ComposeGuard {
   }
 
   private static Map<String, Map<?, ?>> services(Map<?, ?> root) {
-    Map<String, Map<?, ?>> result = new java.util.LinkedHashMap<>();
+    Map<String, Map<?, ?>> result = new LinkedHashMap<>();
     if (root.get("services") instanceof Map<?, ?> services) {
       services.forEach((name, service) -> {
         if (service instanceof Map<?, ?> map) {

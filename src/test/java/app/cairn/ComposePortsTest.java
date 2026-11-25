@@ -66,6 +66,22 @@ class ComposePortsTest {
         Arguments.of(
             "host network",
             "services:\n  db:\n    image: x\n    network_mode: host\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "interpolated host network",
+            "services:\n  db:\n    image: x\n    network_mode: \"${NET:-host}\"\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "bridge network_mode key",
+            "services:\n  db:\n    image: x\n    network_mode: bridge\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "interpolated port",
+            "services:\n  db:\n    image: x\n    ports:\n      - \"127.0.0.1:${PORT}:5432\"\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "long form with loopback host_ip",
+            "services:\n  db:\n    image: x\n    ports:\n      - target: 5432\n        published: 5432\n        host_ip: 127.0.0.1\n",
             "unrelated.txt"));
   }
 
