@@ -61,6 +61,9 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
   validate `sha256` as 64 lowercase hex characters in code or with a check in a new migration.
 - Cleanup (T-003 review R7, Low): `testcontainers-junit-jupiter` is unused and `flyway-core`
   is redundant with `spring-boot-starter-flyway`; drop them when a card next touches `pom.xml`.
+- Next card touching `EnvExampleTest` (T-003 security review S8, Low): Compose's dotenv parser
+  also accepts `KEY: value`, so match the separator as `\s*[=:]` and add a case with
+  `CAIRN_DB_PASSWORD: change-me` after the empty line.
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
