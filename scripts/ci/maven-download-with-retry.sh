@@ -44,7 +44,7 @@ for attempt in $(seq 1 "$max_attempts"); do
     exit 1
   fi
   if [ "$attempt" -lt "$max_attempts" ]; then
-    wait_seconds=$((unit * (1 << (attempt - 1))))
+    wait_seconds=$((10#$unit * (1 << (attempt - 1))))
     echo "Maven download attempt ${attempt} failed; retrying in ${wait_seconds}s"
     sleep "$wait_seconds"
   fi

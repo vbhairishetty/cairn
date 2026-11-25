@@ -51,7 +51,8 @@ download error shown in the log.
 1. Given `ci.yml` (`build`, `jqwik-ban`) and `codeql.yml` (`codeql`), When a job runs, Then
    before its first Maven command a step named `Download Maven (with retry)` first deletes
    `${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists`, then runs `./mvnw -B -v` up to 5 times, waiting
-   15, 30, 60 and 120 seconds between attempts (about 4 minutes at most). It stops at the first
+   15, 30, 60 and 120 seconds between attempts (about 4 minutes of waiting; each attempt is
+   bounded only by the job timeout). It stops at the first
    success and fails the job if all 5 attempts fail. The wrapper runs in verbose mode inside
    the script only, so a failed download shows its real error in the log. If an
    attempt reports a checksum mismatch ("Failed to validate Maven distribution SHA-256"), the
@@ -70,7 +71,8 @@ download error shown in the log.
    the report; the stubs are not committed. The script takes the wrapper path as an optional
    argument so it can be tested; it defaults to `./mvnw`.)*
 5. Given the pull request, When CI runs, Then `build`, `jqwik-ban`, `codeql` and
-   `dependency-review` are green, and each job's log shows
+   `dependency-review` are green, and the log of each Maven job (`build`, `jqwik-ban`,
+   `codeql`) shows
    `Deleted cached Maven distributions under ...`, then the wrapper's verbose line
    `Couldn't find MAVEN_HOME, downloading and installing it`, then `Maven download ok on
    attempt 1`. The verbose line appears only when no cached copy was used, so it is the
@@ -86,7 +88,7 @@ download error shown in the log.
 
 | Action | Path | Purpose |
 | --- | --- | --- |
-| create | `scripts/ci/maven-download-with-retry.sh` | download Maven through the wrapper with up to 3 attempts |
+| create | `scripts/ci/maven-download-with-retry.sh` | download Maven through the wrapper with up to 5 attempts |
 | modify | `.github/workflows/ci.yml` | call the script before the first Maven command in both jobs |
 | modify | `.github/workflows/codeql.yml` | call the script before the build step |
 
