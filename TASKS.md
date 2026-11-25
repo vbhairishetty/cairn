@@ -18,7 +18,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-007 | Find and cite the CMS coverage-example claim data; draft `sbc-coverage-examples.yaml` | orchestrator | DONE (PR #6) | - |
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
-| T-010 | Retry the Maven wrapper download in CI | sde1-implementer | DONE (PR #11) | T-004 |
+| T-010 | Retry the Maven wrapper download in CI | sde1-implementer | DONE (PR #11, #12) | T-004 |
 
 ## Day 2 onward
 
@@ -48,6 +48,11 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
   `.mvn/maven.config` absent or blank, `.mvn/extensions.xml` absent, no committed `*.jar` or
   `*.zip`, and no `.jqwik-database` anywhere in the tree; in BuildGuard, reject Surefire and
   Failsafe `workingDirectory`. Take it when convenient; each gap needs a deliberate edit.
+- First feature cards for `documents`, `profile` and `validate` (T-002 security review S1 to S3,
+  Low): root-package APIs return IDs and value types, never file paths, raw document text or
+  entities; any change to a `package-info.java` (named interfaces, wildcards, widened
+  `allowedDependencies`, open modules) needs an ADR and must keep the table-pinning test in
+  `ModularityTest` green; the `app.cairn` root package holds only `CairnApplication`.
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
