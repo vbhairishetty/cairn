@@ -53,6 +53,14 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
   entities; any change to a `package-info.java` (named interfaces, wildcards, widened
   `allowedDependencies`, open modules) needs an ADR and must keep the table-pinning test in
   `ModularityTest` green; the `app.cairn` root package holds only `CairnApplication`.
+- Day 6 app-service and Dockerfile card (T-003 security review S4, S5, Low): the app connects
+  as a non-superuser role that owns only the module schemas (IT asserts `rolsuper` is false;
+  new threat entry); document that the password belongs only in `CAIRN_DB_PASSWORD` and fail
+  at startup if `CAIRN_DB_URL` contains `password=`, because Flyway logs the URL.
+- Upload card for `documents` (T-003 review R6, Low): `char(64)` pads short values, so
+  validate `sha256` as 64 lowercase hex characters in code or with a check in a new migration.
+- Cleanup (T-003 review R7, Low): `testcontainers-junit-jupiter` is unused and `flyway-core`
+  is redundant with `spring-boot-starter-flyway`; drop them when a card next touches `pom.xml`.
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
