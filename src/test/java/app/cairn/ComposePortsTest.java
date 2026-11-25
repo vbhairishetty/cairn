@@ -3,66 +3,80 @@ package app.cairn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-// TM-07: every published Compose port must bind to the loopback address.
+// TM-07: every published Compose port must bind to the loopback address, and nothing may
+// change that from another file. The guard accepts only short-form 127.0.0.1 ports, so a
+// long-form entry with host_ip 127.0.0.1 fails closed.
 class ComposePortsTest {
 
-  private static final Path COMPOSE_FILE = Path.of("docker-compose.yml");
+  private static final String GOOD =
+      "services:\n  db:\n    image: x\n    ports:\n      - \"127.0.0.1:5432:5432\"\n";
 
   @Test
-  void everyPublishedPortBindsToLoopback() throws IOException {
-    List<String> ports = publishedPorts(COMPOSE_FILE);
-
-    assertThat(ports).isNotEmpty().allSatisfy(port -> assertThat(port).startsWith("127.0.0.1:"));
+  void everyPublishedPortBindsToLoopback() {
+    assertThat(ComposeGuard.violations(Path.of("docker-compose.yml"), Path.of("."))).isEmpty();
   }
 
   @Test
-  void portWithoutHostAddressIsDetected() throws IOException {
-    Path file = Files.createTempFile("compose-bare", ".yml");
-    Files.writeString(file, "services:\n  db:\n    image: x\n    ports:\n      - \"5432:5432\"\n");
-
-    List<String> ports = publishedPorts(file);
-
-    assertThat(ports).containsExactly("5432:5432");
-    assertThat(ports).noneMatch(port -> port.startsWith("127.0.0.1:"));
+  void composeFilePublishesAtLeastOnePort() {
+    assertThat(ComposeGuard.publishedPorts(Path.of("docker-compose.yml"))).isNotEmpty();
   }
 
   @Test
-  void portBoundToAllInterfacesIsDetected() throws IOException {
-    Path file = Files.createTempFile("compose-open", ".yml");
-    Files.writeString(
-        file, "services:\n  db:\n    image: x\n    ports:\n      - \"0.0.0.0:5432:5432\"\n");
+  void loopbackOnlyFileHasNoViolations(@TempDir Path dir) throws IOException {
+    Path file = dir.resolve("docker-compose.yml");
+    Files.writeString(file, GOOD);
 
-    List<String> ports = publishedPorts(file);
-
-    assertThat(ports).containsExactly("0.0.0.0:5432:5432");
-    assertThat(ports).noneMatch(port -> port.startsWith("127.0.0.1:"));
+    assertThat(ComposeGuard.violations(file, dir)).isEmpty();
   }
 
-  @SuppressWarnings("unchecked")
-  static List<String> publishedPorts(Path file) throws IOException {
-    List<String> result = new ArrayList<>();
-    try (Reader reader = Files.newBufferedReader(file)) {
-      Object root = new Yaml(new SafeConstructor(new LoaderOptions())).load(reader);
-      Map<String, Object> services =
-          (Map<String, Object>) ((Map<String, Object>) root).get("services");
-      for (Object service : services.values()) {
-        Object ports = ((Map<String, Object>) service).get("ports");
-        if (ports instanceof List<?> list) {
-          list.forEach(port -> result.add(String.valueOf(port)));
-        }
-      }
-    }
-    return result;
+  static Stream<Arguments> bypasses() {
+    return Stream.of(
+        Arguments.of(
+            "bare port",
+            "services:\n  db:\n    image: x\n    ports:\n      - \"5432:5432\"\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "all interfaces",
+            "services:\n  db:\n    image: x\n    ports:\n      - \"0.0.0.0:5432:5432\"\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "long form without host_ip",
+            "services:\n  db:\n    image: x\n    ports:\n      - target: 5432\n        published: 5432\n",
+            "unrelated.txt"),
+        Arguments.of("override file", GOOD, "docker-compose.override.yml"),
+        Arguments.of("override yaml file", GOOD, "docker-compose.override.yaml"),
+        Arguments.of("compose override file", GOOD, "compose.override.yml"),
+        Arguments.of("compose override yaml file", GOOD, "compose.override.yaml"),
+        Arguments.of("sibling compose.yaml", GOOD, "compose.yaml"),
+        Arguments.of("sibling compose.yml", GOOD, "compose.yml"),
+        Arguments.of("include", "include:\n  - other.yml\n" + GOOD, "unrelated.txt"),
+        Arguments.of(
+            "extends",
+            "services:\n  db:\n    extends:\n      file: other.yml\n      service: base\n",
+            "unrelated.txt"),
+        Arguments.of(
+            "host network",
+            "services:\n  db:\n    image: x\n    network_mode: host\n",
+            "unrelated.txt"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("bypasses")
+  void bypassIsReported(String name, String composeYaml, String siblingFile, @TempDir Path dir)
+      throws IOException {
+    Path file = dir.resolve("docker-compose.yml");
+    Files.writeString(file, composeYaml);
+    Files.writeString(dir.resolve(siblingFile), "x: 1\n");
+
+    assertThat(ComposeGuard.violations(file, dir)).isNotEmpty();
   }
 }

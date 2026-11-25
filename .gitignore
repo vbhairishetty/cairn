@@ -19,3 +19,7 @@ target/
 
 # Agent working notes (not committed for now)
 .claude/agent-memory/
+
+# Compose overrides could republish ports (TM-07)
+docker-compose.override.y*ml
+compose.override.y*ml

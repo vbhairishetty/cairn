@@ -1,7 +1,7 @@
 services:
   postgres:
-    # Exact tag, also read by the Testcontainers configuration in src/test.
-    image: pgvector/pgvector:0.8.7-pg16
+    # Exact tag and index digest, also read by the Testcontainers configuration in src/test.
+    image: pgvector/pgvector:0.8.7-pg16@sha256:484e838076e04939d27d3e176e91c86eea96236126023be8d3059761122e579f
     environment:
       POSTGRES_DB: cairn
       POSTGRES_USER: ${CAIRN_DB_USER:-cairn}

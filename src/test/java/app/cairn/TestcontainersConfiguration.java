@@ -22,20 +22,27 @@ public class TestcontainersConfiguration {
   @ServiceConnection
   PostgreSQLContainer postgres() {
     DockerImageName image =
-        DockerImageName.parse(composeImage()).asCompatibleSubstituteFor("postgres");
+        DockerImageName.parse(composeImage(Path.of("docker-compose.yml")))
+            .asCompatibleSubstituteFor("postgres");
     return new PostgreSQLContainer(image);
   }
 
-  @SuppressWarnings("unchecked")
-  static String composeImage() {
-    try (Reader reader = Files.newBufferedReader(Path.of("docker-compose.yml"))) {
-      Object root = new Yaml(new SafeConstructor(new LoaderOptions())).load(reader);
-      Map<String, Object> services =
-          (Map<String, Object>) ((Map<String, Object>) root).get("services");
-      Map<String, Object> postgres = (Map<String, Object>) services.get("postgres");
-      return (String) postgres.get("image");
+  static String composeImage(Path composeFile) {
+    Object root;
+    try (Reader reader = Files.newBufferedReader(composeFile)) {
+      root = new Yaml(new SafeConstructor(new LoaderOptions())).load(reader);
     } catch (IOException e) {
-      throw new IllegalStateException("Cannot read docker-compose.yml", e);
+      throw new IllegalStateException("Cannot read " + composeFile, e);
     }
+    Object image = child(child(child(root, "services"), "postgres"), "image");
+    if (!(image instanceof String text) || text.isBlank() || text.contains("${")) {
+      throw new IllegalStateException(
+          "services.postgres.image in " + composeFile + " must be a literal image reference");
+    }
+    return text;
+  }
+
+  private static Object child(Object parent, String key) {
+    return parent instanceof Map<?, ?> map ? map.get(key) : null;
   }
 }

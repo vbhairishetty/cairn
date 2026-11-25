@@ -30,7 +30,9 @@ class DocumentSchemaIT {
     List<String> columns =
         jdbc.sql(
                 """
-                select column_name from information_schema.columns
+                select column_name || ' ' || data_type
+                  || coalesce(' ' || character_maximum_length, '')
+                from information_schema.columns
                 where table_schema = 'documents' and table_name = 'document'
                 order by ordinal_position
                 """)
@@ -39,7 +41,37 @@ class DocumentSchemaIT {
 
     assertThat(columns)
         .containsExactly(
-            "id", "kind", "sha256", "bytes", "page_count", "storage_name", "uploaded_at");
+            "id uuid",
+            "kind text",
+            "sha256 character 64",
+            "bytes bigint",
+            "page_count integer",
+            "storage_name text",
+            "uploaded_at timestamp with time zone");
+  }
+
+  @Test
+  void schemaHistoryIsOutsideModuleSchemas() {
+    List<String> schemas =
+        jdbc.sql(
+                """
+                select table_schema from information_schema.tables
+                where table_name = 'flyway_schema_history'
+                """)
+            .query(String.class)
+            .list();
+
+    assertThat(schemas).containsExactly("flyway");
+  }
+
+  @Test
+  void pgvectorExtensionIsAvailable() {
+    Integer count =
+        jdbc.sql("select count(*) from pg_available_extensions where name = 'vector'")
+            .query(Integer.class)
+            .single();
+
+    assertThat(count).isEqualTo(1);
   }
 
   @Test
