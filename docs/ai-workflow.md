@@ -22,10 +22,10 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 6 |
-| Review rounds (total) | 22 |
-| Reviewer findings (High / Medium / Low) | 1 / 19 / 63 |
-| Security findings (High / Medium / Low) | 0 / 5 / 20 |
+| Tasks merged | 7 |
+| Review rounds (total) | 27 |
+| Reviewer findings (High / Medium / Low) | 1 / 23 / 66 |
+| Security findings (High / Medium / Low) | 0 / 5 / 24 |
 | Agent outputs rejected by the orchestrator | 1 |
 | CI failures after local gates passed | 3 |
 
@@ -263,3 +263,32 @@ rewritten except to correct a factual error.
 - Interview note: "Two reviewers independently caught that my own task card had the caching
   behavior of a pinned GitHub action wrong, which would have left an unverified build tool in
   every CI run."
+
+### T-002: Create the module root packages and the Modularity test (2026-11-25)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/13
+- Implementer: sde1-implementer (Sonnet); rounds: 5 (the director approved rounds 4 and 5)
+- Reviewer findings: 4 Medium, 3 Low.
+  - Most important: Spring Modulith's `verify()` only checks code against whatever the
+    annotations declare, so the boundary could be switched off in the same change as the
+    violation.
+  - Each round found another one-line escape that kept the build green:
+    - a widened or deleted `allowedDependencies`;
+    - `type = OPEN`;
+    - `@Modulithic(sharedModules)`;
+    - the composed `@Modulith` annotation carrying the same setting.
+  - The final fix asserts what Modulith actually computes (`getSharedModules()` empty) plus a
+    merged-annotation lookup, alongside a table test that pins every module's dependencies and
+    CLOSED type.
+- Security findings: 4 Low. Public APIs should return IDs, not paths or raw text; changes to
+  `package-info.java` need an ADR; the root package should hold only `CairnApplication`; and
+  the indirect `@Modulithic` gap, later fixed. The first three are recorded in TASKS.md for
+  the first feature cards.
+- Rejected: nothing from agents. Two reviewers disagreed on whether `sharedModules` affects
+  dependency rules; the orchestrator followed the reviewer whose probe showed it does.
+- CI: green on the first run.
+- Director decisions:
+  - `web` and `cli` may use any module except each other (card and architecture rules updated)
+  - two extra rounds to close the shared-modules escapes
+- Interview note: "The reviewer kept proving that a one-line annotation could quietly switch
+  off a module boundary, and the fix that ended it was to test what the framework computes
+  rather than how the annotations are written."
