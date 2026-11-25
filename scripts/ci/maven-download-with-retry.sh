@@ -3,21 +3,25 @@
 # setup-java with cache: maven also restores ~/.m2/wrapper/dists, and the wrapper runs a
 # distribution that is already there without checking its SHA-256 again. So this script
 # first deletes that folder, which forces a fresh download that the wrapper verifies.
-# A checksum mismatch is never retried. Other failures are retried up to 3 times.
-# Usage: maven-download-with-retry.sh [wrapper-path] [delay-seconds]
-# The delay argument exists only so the local stub test can run fast.
+# A checksum mismatch is never retried. Other failures are retried, up to 5 attempts, waiting
+# unit, 2*unit, 4*unit and 8*unit seconds between them (15, 30, 60, 120 by default).
+# The wrapper runs with MVNW_VERBOSE=true for that one command only, so wget is not quiet and
+# the real download error reaches the log. The wrapper never prints MVNW_USERNAME or
+# MVNW_PASSWORD, which are unset in CI.
+# Usage: maven-download-with-retry.sh [wrapper-path] [unit-seconds]
+# The unit argument exists only so the local stub test can run fast.
 # For local runs, set MAVEN_USER_HOME to a temporary directory first; otherwise this deletes
 # your own ~/.m2/wrapper/dists (a re-download, not data loss).
 set -euo pipefail
 
 wrapper="${1:-./mvnw}"
-delay="${2:-15}"
-max_attempts=3
+unit="${2:-15}"
+max_attempts=5
 mismatch_text="Failed to validate Maven distribution SHA-256"
 
-case "$delay" in
+case "$unit" in
   '' | *[!0-9]*)
-    echo "FAIL: delay must be a non-negative integer" >&2
+    echo "FAIL: unit must be a non-negative integer" >&2
     exit 2
     ;;
 esac
@@ -30,7 +34,7 @@ log_file="$(mktemp)"
 trap 'rm -f -- "$log_file"' EXIT
 
 for attempt in $(seq 1 "$max_attempts"); do
-  if "$wrapper" -B -v 2>&1 | tee "$log_file"; then
+  if MVNW_VERBOSE=true "$wrapper" -B -v 2>&1 | tee "$log_file"; then
     echo "Maven download ok on attempt ${attempt}"
     exit 0
   fi
@@ -39,8 +43,9 @@ for attempt in $(seq 1 "$max_attempts"); do
     exit 1
   fi
   if [ "$attempt" -lt "$max_attempts" ]; then
-    echo "Maven download attempt ${attempt} failed; retrying in ${delay}s"
-    sleep "$delay"
+    wait_seconds=$((unit * (1 << (attempt - 1))))
+    echo "Maven download attempt ${attempt} failed; retrying in ${wait_seconds}s"
+    sleep "$wait_seconds"
   fi
 done
 
