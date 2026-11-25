@@ -48,6 +48,7 @@ class ModularityTest {
             .getAnnotation(ApplicationModule.class);
 
     assertThat(annotation).isNotNull();
+    assertThat(annotation.type()).isEqualTo(ApplicationModule.Type.CLOSED);
     assertThat(annotation.allowedDependencies()).containsExactlyInAnyOrderElementsOf(expected);
   }
 
