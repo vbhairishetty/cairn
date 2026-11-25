@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.modulith.ApplicationModule;
 import org.springframework.modulith.Modulithic;
 import org.springframework.modulith.core.ApplicationModules;
@@ -88,8 +89,10 @@ class ModularityTest {
   }
 
   @Test
-  void applicationDeclaresNoModulithicSettings() {
-    assertThat(CairnApplication.class.getAnnotation(Modulithic.class)).isNull();
+  void applicationDeclaresNoSharedModulesOrModulithicSettings() {
+    assertThat(modules.getSharedModules()).isEmpty();
+    assertThat(AnnotatedElementUtils.hasAnnotation(CairnApplication.class, Modulithic.class))
+        .isFalse();
   }
 
   @Test
