@@ -7,7 +7,8 @@
 # unit, 2*unit, 4*unit and 8*unit seconds between them (15, 30, 60, 120 by default).
 # The wrapper runs with MVNW_VERBOSE=true for that one command only, so wget is not quiet and
 # the real download error reaches the log. The wrapper never prints MVNW_USERNAME or
-# MVNW_PASSWORD, which are unset in CI.
+# MVNW_PASSWORD, which are unset in CI. Verbose mode does print the download URL, so
+# credentials must never be put in MVNW_REPOURL or distributionUrl.
 # Usage: maven-download-with-retry.sh [wrapper-path] [unit-seconds]
 # The unit argument exists only so the local stub test can run fast.
 # For local runs, set MAVEN_USER_HOME to a temporary directory first; otherwise this deletes

@@ -71,8 +71,10 @@ download error shown in the log.
    argument so it can be tested; it defaults to `./mvnw`.)*
 5. Given the pull request, When CI runs, Then `build`, `jqwik-ban`, `codeql` and
    `dependency-review` are green, and each job's log shows
-   `Deleted cached Maven distributions under ...` followed by `Maven download ok on attempt 1`
-   (the download itself is quiet in the log, so the delete line is the evidence).
+   `Deleted cached Maven distributions under ...`, then the wrapper's verbose line
+   `Couldn't find MAVEN_HOME, downloading and installing it`, then `Maven download ok on
+   attempt 1`. The verbose line appears only when no cached copy was used, so it is the
+   evidence.
 
 ## Out of scope
 
@@ -101,7 +103,7 @@ none.
 
 | Test | Level | Covers criteria |
 | --- | --- | --- |
-| Stub `mvnw` that fails twice then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
+| Stub `mvnw` that fails four times then succeeds; stub that always fails (not committed) | local script test | 3, 4 |
 | A pre-populated `wrapper/dists/.../bin/mvn` that prints a marker is deleted and never run (local runs set `MAVEN_USER_HOME` to a temporary directory) | local script test | 1 |
 | A stub that prints the checksum-mismatch line exits non-zero after exactly one attempt | local script test | 1 |
 | CI run on the PR, each job showing attempt 1 | CI | 1, 5 |
