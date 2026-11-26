@@ -19,7 +19,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
 | T-010 | Retry the Maven wrapper download in CI | sde1-implementer | DONE (PR #11, #12) | T-004 |
-| T-011 | Reuse a verified Maven distribution in CI | sde1-implementer | IN_PROGRESS | T-010 |
+| T-011 | Reuse a verified Maven distribution in CI | sde1-implementer | IN_REVIEW (PR #15) | T-010 |
 
 ## Day 2 onward
 
