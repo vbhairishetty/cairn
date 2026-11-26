@@ -1,7 +1,7 @@
 ---
 id: T-011
 title: Reuse a verified Maven distribution in CI instead of downloading it every job
-status: READY
+status: IN_PROGRESS
 complexity: medium
 risk: medium
 agent: sde1-implementer
