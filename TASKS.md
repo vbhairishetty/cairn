@@ -10,8 +10,8 @@ cards (DRAFT to READY) in `/plan-day`.
 | --- | --- | --- | --- | --- |
 | - | Design draft and review of `docs/designs/cairn.md` (`/design-review`) | orchestrator + design-reviewer | DONE (PR #1) | - |
 | T-001 | Maven project skeleton with Spring Boot, Spring Modulith, Spotless, Error Prone, JaCoCo | junior-implementer | DONE (PR #2) | design PR merged |
-| T-002 | Modularity test and module root packages for all modules | sde1-implementer | IN_REVIEW (PR #13) | T-001 |
-| T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | READY | T-001 |
+| T-002 | Modularity test and module root packages for all modules | sde1-implementer | DONE (PR #13) | T-001 |
+| T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | IN_REVIEW (PR #14) | T-001 |
 | T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config; jqwik behavioral check | sde1-implementer | DONE (PR #7) | T-001, T-009 |
 | T-005 | `common.Money` and `SourceRef` value types with property tests | sde2-implementer | READY | T-002 |
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | READY (needs public SBC PDFs) | - |
@@ -53,6 +53,17 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
   entities; any change to a `package-info.java` (named interfaces, wildcards, widened
   `allowedDependencies`, open modules) needs an ADR and must keep the table-pinning test in
   `ModularityTest` green; the `app.cairn` root package holds only `CairnApplication`.
+- Day 6 app-service and Dockerfile card (T-003 security review S4, S5, Low): the app connects
+  as a non-superuser role that owns only the module schemas (IT asserts `rolsuper` is false;
+  new threat entry); document that the password belongs only in `CAIRN_DB_PASSWORD` and fail
+  at startup if `CAIRN_DB_URL` contains `password=`, because Flyway logs the URL.
+- Upload card for `documents` (T-003 review R6, Low): `char(64)` pads short values, so
+  validate `sha256` as 64 lowercase hex characters in code or with a check in a new migration.
+- Cleanup (T-003 review R7, Low): `testcontainers-junit-jupiter` is unused and `flyway-core`
+  is redundant with `spring-boot-starter-flyway`; drop them when a card next touches `pom.xml`.
+- Next card touching `EnvExampleTest` (T-003 security review S8, Low): Compose's dotenv parser
+  also accepts `KEY: value`, so match the separator as `\s*[=:]` and add a case with
+  `CAIRN_DB_PASSWORD: change-me` after the empty line.
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;

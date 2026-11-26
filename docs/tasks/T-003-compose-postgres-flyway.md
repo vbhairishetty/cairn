@@ -1,7 +1,7 @@
 ---
 id: T-003
 title: Add Docker Compose Postgres, Flyway and the first migration
-status: READY
+status: IN_REVIEW
 complexity: low
 risk: medium
 agent: sde1-implementer
@@ -148,6 +148,19 @@ All gates in `/verify-gates` must pass. `./mvnw verify` now needs Docker running
   there is no committed default. The director also approved the matching "Done means" wording
   in the design. This PR updates it to: "A fresh clone starts with `cp .env.example .env`,
   setting `CAIRN_DB_PASSWORD`, and then `docker compose up`".
+
+**Security review decisions (director, 2026-11-25):**
+- S1 (Medium): `ComposePortsTest` must also fail when Compose would load anything it does not
+  check: a sibling `compose.yaml`, `compose.yml` or `docker-compose.override.y*ml`, a
+  top-level `include`, a service `extends`, or `network_mode: host`.
+- S2: `.env.example` leaves `CAIRN_DB_PASSWORD` empty, so Compose stops until a real
+  password is set. A test pins the empty value.
+- S3: the image is pinned by tag and digest (`name:tag@sha256:...`, the multi-arch index
+  digest). Compose and Testcontainers read the same line, and a test requires the digest.
+
+**Review decision (orchestrator, 2026-11-25, review R2):** `spring.flyway.default-schema` is
+`flyway`, a dedicated non-module schema, so the migration history never sits in a module's
+schema and a delete-all of module data cannot wipe it. Migrations stay schema-qualified.
 
 ## Notes
 

@@ -1,3 +1,15 @@
 spring:
   application:
     name: cairn
+  datasource:
+    url: ${CAIRN_DB_URL:jdbc:postgresql://127.0.0.1:5432/cairn}
+    username: ${CAIRN_DB_USER:cairn}
+    password: ${CAIRN_DB_PASSWORD}
+  flyway:
+    # Schema history lives outside the module schemas so deleting user data cannot wipe it.
+    default-schema: flyway
+    # Each new module appends its schema here and its folder to locations.
+    schemas:
+      - documents
+    locations:
+      - classpath:db/migration/documents
