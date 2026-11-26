@@ -53,6 +53,16 @@ needs a new action (for example `actions/cache`), stop and return NEEDS_DECISION
 Workflow files change only through a card that says so. This card does, and the orchestrator
 asks the director before pushing.
 
+**Round 1 finding and director decision (2026-11-26):** `setup-java` v6.3.0 saves its Maven
+cache only when the key (a hash of `pom.xml`, the wrapper properties and
+`.mvn/extensions.xml`) was not restored, and `main` already holds an entry for the current key.
+So a zip placed under `~/.m2/repository` would never be saved until `pom.xml` changes. The
+director approved one new action: `actions/cache`, pinned to a full commit SHA with the
+version in a comment, used only for the Maven zip in a dedicated directory (not inside
+`~/.m2`), with a key derived from `.mvn/wrapper/maven-wrapper.properties`. Criterion 5's
+"no new action" is amended to allow exactly this one. A poisoned cache entry cannot run,
+because the script verifies the zip against the pinned SHA-256 and fails on a mismatch.
+
 ## Acceptance criteria
 
 1. Given a cached zip whose SHA-256 equals `distributionSha256Sum`, When a Maven job runs,
@@ -67,8 +77,8 @@ asks the director before pushing.
 4. Given any run, When Maven starts, Then nothing under `~/.m2/wrapper/dists` that existed
    before the step is ever executed: it is deleted first, as in T-010, and Maven is installed
    from the verified zip.
-5. Given the step, When it is read, Then it uses no `${{ }}` inside `run:`, no new action, no
-   secrets and no permission change, and the logic lives in `scripts/ci/` (the T-010 script
+5. Given the step, When it is read, Then it uses no `${{ }}` inside `run:`, no new action other
+   than the approved SHA-pinned `actions/cache`, no secrets and no permission change, and the logic lives in `scripts/ci/` (the T-010 script
    is changed or replaced; no copy-paste across jobs).
 6. Given the pull request, When CI runs twice (the second run after the first has saved the
    cache), Then `build`, `jqwik-ban`, `codeql` and `dependency-review` are green, and the second
@@ -85,8 +95,8 @@ asks the director before pushing.
 | Action | Path | Purpose |
 | --- | --- | --- |
 | modify | `scripts/ci/maven-download-with-retry.sh` (or a renamed successor) | verify-or-download the zip, install from it |
-| modify | `.github/workflows/ci.yml` | only if the step name or call changes |
-| modify | `.github/workflows/codeql.yml` | only if the step name or call changes |
+| modify | `.github/workflows/ci.yml` | `actions/cache` step for the Maven zip before the script, in both jobs |
+| modify | `.github/workflows/codeql.yml` | the same `actions/cache` step before the script |
 | modify | `docs/threat-model.md` | TM-15 defense and test text for the cached, verified zip |
 
 ## Public API
