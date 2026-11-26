@@ -3,8 +3,10 @@
 # setup-java with cache: maven restores ~/.m2/wrapper/dists, and the wrapper runs a
 # distribution that is already there without checking its SHA-256 again. So this script
 # always deletes that folder first and never runs anything that was there.
-# The verified zip lives in the local repository path, ~/.m2/repository/org/apache/maven/...,
-# which setup-java caches. Then:
+# The verified zip lives in its own directory, ~/.cache/cairn/maven-dist by default (override
+# with CAIRN_MAVEN_DIST_DIR, set in the workflow step's env:). The workflow saves that
+# directory with actions/cache, keyed on the wrapper properties. It is outside ~/.m2 so the
+# setup-java cache is unaffected. Then:
 #   - cached zip present: its SHA-256 must equal distributionSha256Sum from
 #     .mvn/wrapper/maven-wrapper.properties. A mismatch fails at once: no retry, no download.
 #   - no cached zip: download it (5 attempts, waiting unit, 2*unit, 4*unit, 8*unit seconds, so
@@ -17,7 +19,7 @@
 # Usage: maven-download-with-retry.sh [wrapper-path] [unit-seconds]
 # The unit argument exists only so the local stub test can run fast.
 # For local runs, set MAVEN_USER_HOME to a temporary directory first; otherwise this deletes
-# your own ~/.m2/wrapper/dists (a re-download, not data loss) and writes into ~/.m2/repository.
+# your own ~/.m2/wrapper/dists (a re-download, not data loss); also set CAIRN_MAVEN_DIST_DIR.
 set -euo pipefail
 
 wrapper="${1:-./mvnw}"
@@ -80,7 +82,8 @@ if [ "${#expected_sha}" -ne 64 ]; then
 fi
 
 maven_home="${MAVEN_USER_HOME:-${HOME:?HOME is not set}/.m2}"
-cached_zip="${maven_home}/repository/${distribution_url#"$central_prefix"}"
+dist_dir="${CAIRN_MAVEN_DIST_DIR:-${HOME:?HOME is not set}/.cache/cairn/maven-dist}"
+cached_zip="${dist_dir}/${distribution_url##*/}"
 
 rm -rf -- "${maven_home}/wrapper/dists"
 echo "Deleted cached Maven distributions under ${maven_home}/wrapper/dists"

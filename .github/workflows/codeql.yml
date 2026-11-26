@@ -31,6 +31,11 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: Cache Maven distribution zip
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ~/.cache/cairn/maven-dist
+          key: maven-dist-${{ runner.os }}-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
       - name: Download Maven (with retry)
         run: scripts/ci/maven-download-with-retry.sh
       - name: Initialize CodeQL
