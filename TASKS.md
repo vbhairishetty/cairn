@@ -65,6 +65,11 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
 - Next card touching `EnvExampleTest` (T-003 security review S8, Low): Compose's dotenv parser
   also accepts `KEY: value`, so match the separator as `\s*[=:]` and add a case with
   `CAIRN_DB_PASSWORD: change-me` after the empty line.
+- Next card touching `scripts/ci/` (T-011 reviews, Low): the local test should
+  `unset MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL MVNW_VERBOSE CAIRN_MAVEN_DIST_DIR
+  MAVEN_USER_HOME` at the top, so a caller's wrapper credentials cannot send it to the network
+  (security S5); optionally split the Maven zip cache into `actions/cache/restore` and
+  `actions/cache/save` so a failing job still saves the verified zip (review R2, director call).
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
