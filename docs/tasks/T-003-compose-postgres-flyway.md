@@ -1,7 +1,7 @@
 ---
 id: T-003
 title: Add Docker Compose Postgres, Flyway and the first migration
-status: IN_REVIEW
+status: DONE
 complexity: low
 risk: medium
 agent: sde1-implementer

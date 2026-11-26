@@ -22,12 +22,12 @@ rewritten except to correct a factual error.
 
 | Measure | Count |
 | --- | --- |
-| Tasks merged | 7 |
-| Review rounds (total) | 27 |
-| Reviewer findings (High / Medium / Low) | 1 / 23 / 66 |
-| Security findings (High / Medium / Low) | 0 / 5 / 24 |
+| Tasks merged | 8 |
+| Review rounds (total) | 30 |
+| Reviewer findings (High / Medium / Low) | 1 / 26 / 77 |
+| Security findings (High / Medium / Low) | 0 / 6 / 31 |
 | Agent outputs rejected by the orchestrator | 1 |
-| CI failures after local gates passed | 3 |
+| CI failures after local gates passed | 4 |
 
 ## Design reviews
 
@@ -292,3 +292,33 @@ rewritten except to correct a factual error.
 - Interview note: "The reviewer kept proving that a one-line annotation could quietly switch
   off a module boundary, and the fix that ended it was to test what the framework computes
   rather than how the annotations are written."
+
+### T-003: Add Docker Compose Postgres, Flyway and the first migration (2026-11-25)
+- Pull request: https://github.com/vbhairishetty/cairn/pull/14
+- Implementer: sde1-implementer (Sonnet); rounds: 3
+- Reviewer findings: 3 Medium, 11 Low.
+  - Most important: the TM-07 port check only read `ports` in `docker-compose.yml`, so
+    `network_mode: host` (later also written as `${NET:-host}`) exposed a service while the
+    test stayed green.
+  - Flyway put its history table in the `documents` schema; the orchestrator moved it to a
+    dedicated `flyway` schema so a delete-all of module data cannot wipe it.
+  - Negative tests restated the rule instead of calling it, so a weakened rule passed; all
+    cases now go through one shared check, and the `contains` mutant is killed.
+- Security findings: 1 Medium, 7 Low.
+  - S1 (Medium): Compose auto-loads `compose.yaml`, override files, `include` and `extends`,
+    none of which the guard read. Fixed.
+  - The example password `change-me` would have passed Compose's required-variable check;
+    the director chose an empty value with a test. The image is pinned by digest (director).
+  - Deferred to later cards in TASKS.md: a non-superuser app role (S4), no password in
+    `CAIRN_DB_URL` (S5), the `KEY: value` env form (S8).
+- Rejected: nothing from agents. One test (`EnvExampleTest`) had no red-first evidence; the
+  reviewer supplied it with a mutant.
+- CI: the tests passed on every run, but `build` and `codeql` failed four times before Maven
+  started because Maven Central returned 429 Too Many Requests to the wrapper download for
+  the whole retry window. Re-runs passed once the limit cleared. T-011 removes the per-job
+  download.
+- Director decisions: empty `CAIRN_DB_PASSWORD` in `.env.example`; tag-and-digest image pin;
+  wait and re-run rather than retry into the rate limit; write T-011.
+- Interview note: "Every round the reviewers found another way Docker Compose could expose
+  the database without touching the file the test read, so the guard ended up rejecting
+  anything it could not prove safe."
