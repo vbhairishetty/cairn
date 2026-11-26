@@ -3,10 +3,10 @@
 # setup-java with cache: maven restores ~/.m2/wrapper/dists, and the wrapper runs a
 # distribution that is already there without checking its SHA-256 again. So this script
 # always deletes that folder first and never runs anything that was there.
-# The verified zip lives in its own directory, ~/.cache/cairn/maven-dist by default (override
-# with CAIRN_MAVEN_DIST_DIR, set in the workflow step's env:). The workflow saves that
-# directory with actions/cache, keyed on the wrapper properties. It is outside ~/.m2 so the
-# setup-java cache is unaffected. Then:
+# The verified zip lives in its own directory, ~/.cache/cairn/maven-dist by default. That
+# default must equal the `path:` of the workflow's actions/cache step; CAIRN_MAVEN_DIST_DIR
+# exists for local tests. The workflow saves that directory keyed on the wrapper properties.
+# It is outside ~/.m2 so the setup-java cache is unaffected. Then:
 #   - cached zip present: its SHA-256 must equal distributionSha256Sum from
 #     .mvn/wrapper/maven-wrapper.properties. A mismatch fails at once: no retry, no download.
 #   - no cached zip: download it (5 attempts, waiting unit, 2*unit, 4*unit, 8*unit seconds, so
@@ -65,8 +65,8 @@ case "$distribution_url" in
     ;;
 esac
 case "$distribution_url" in
-  *..*)
-    echo "FAIL: distributionUrl must not contain '..'" >&2
+  *..* | *%* | *\?* | *\#* | *@*)
+    echo "FAIL: distributionUrl must not contain '..', '%', '?', '#' or '@'" >&2
     exit 1
     ;;
 esac
@@ -142,7 +142,7 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
-[ -n "$dest" ] || exit 2
+[ -n "$dest" ] || { echo "FAIL: wget shim found no -O target" >&2; exit 2; }
 cp -- "$CAIRN_VERIFIED_MAVEN_ZIP" "$dest"
 SHIM
 chmod +x "${shim_dir}/wget"
