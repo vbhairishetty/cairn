@@ -11,7 +11,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | - | Design draft and review of `docs/designs/cairn.md` (`/design-review`) | orchestrator + design-reviewer | DONE (PR #1) | - |
 | T-001 | Maven project skeleton with Spring Boot, Spring Modulith, Spotless, Error Prone, JaCoCo | junior-implementer | DONE (PR #2) | design PR merged |
 | T-002 | Modularity test and module root packages for all modules | sde1-implementer | DONE (PR #13) | T-001 |
-| T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | IN_REVIEW (PR #14) | T-001 |
+| T-003 | `docker-compose.yml` (Postgres with pgvector, ports on `127.0.0.1` only) and first Flyway migration | sde1-implementer (medium risk: TM-07, credentials) | DONE (PR #14) | T-001 |
 | T-004 | CI workflow: build, gates, CodeQL, dependency review; Dependabot config; jqwik behavioral check | sde1-implementer | DONE (PR #7) | T-001, T-009 |
 | T-005 | `common.Money` and `SourceRef` value types with property tests | sde2-implementer | READY | T-002 |
 | T-006 | Golden JSON for the first SBC fixture and `cairn-plan-v1.json` schema, checked by hand | orchestrator | READY (needs public SBC PDFs) | - |
@@ -19,6 +19,7 @@ cards (DRAFT to READY) in `/plan-day`.
 | T-008 | README and Apache-2.0 license | junior-implementer | DONE (PR #3) | T-001 |
 | T-009 | Remove jqwik, ban it in the build, reword rule 5 | sde1-implementer | DONE (PR #4) | T-001 |
 | T-010 | Retry the Maven wrapper download in CI | sde1-implementer | DONE (PR #11, #12) | T-004 |
+| T-011 | Reuse a verified Maven distribution in CI | sde1-implementer | IN_PROGRESS | T-010 |
 
 ## Day 2 onward
 
@@ -64,6 +65,11 @@ Plan for Mon Nov 23, approved: T-007, T-004, T-002, T-003, T-005, T-006, in that
 - Next card touching `EnvExampleTest` (T-003 security review S8, Low): Compose's dotenv parser
   also accepts `KEY: value`, so match the separator as `\s*[=:]` and add a case with
   `CAIRN_DB_PASSWORD: change-me` after the empty line.
+- Next card touching `scripts/ci/` (T-011 reviews, Low): the local test should
+  `unset MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL MVNW_VERBOSE CAIRN_MAVEN_DIST_DIR
+  MAVEN_USER_HOME` at the top, so a caller's wrapper credentials cannot send it to the network
+  (security S5); optionally split the Maven zip cache into `actions/cache/restore` and
+  `actions/cache/save` so a failing job still saves the verified zip (review R2, director call).
 - Rules loader card (T-007 security review, proposed TM-09a): parse rules YAML safely into typed
   records (SafeConstructor or Jackson YAML, no tags, no aliases, code-point limit, unknown
   fields rejected); amounts must be quoted strings parsed to `BigDecimal`; dates as `LocalDate`;
